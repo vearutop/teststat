@@ -20,6 +20,8 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    - tagliatelle
+    - funlen
     - lll
     - maligned
     - gochecknoglobals
