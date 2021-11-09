@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/bool64/dev/version"
 	"log"
 	"time"
 )
@@ -23,6 +24,7 @@ type flags struct {
 	RaceDepth   int
 	Slowest     int
 	Markdown    bool
+	Version     bool
 }
 
 func main() {
@@ -33,8 +35,14 @@ func main() {
 	flag.IntVar(&fl.RaceDepth, "race-depth", 5, "stacktrace depth to group similar data races")
 	flag.IntVar(&fl.Slowest, "slowest", 30, "limit number of slowest tests to list")
 	flag.BoolVar(&fl.Markdown, "markdown", false, "render output as markdown")
+	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
 
 	flag.Parse()
+
+	if fl.Version {
+		fmt.Println(version.Info().Version)
+		return
+	}
 
 	if flag.NArg() < 1 {
 		fmt.Println("Usage: teststat [options] report.jsonl ...")

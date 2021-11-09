@@ -180,10 +180,11 @@ func (p *processor) reportFlaky() {
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Tests: %d</summary>\n\n", len(flaky))
 
-			fmt.Println("| Test | Passed | Failed |")
+			fmt.Println("| P | F | Test |")
 			fmt.Println("| - | - | - |")
+
 			for _, ft := range flaky {
-				fmt.Printf("| %s | %d | %d |\n", ft.test, ft.passed, ft.failed)
+				fmt.Printf("| %s | %d | %d |\n", ft.passed, ft.failed, ft.test)
 			}
 
 			fmt.Println("</details>")
@@ -210,15 +211,16 @@ func (p *processor) reportSlowest() {
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Total slow runs: %d</summary>\n\n", len(p.slowest))
 
-			fmt.Println("| Result | Package | Test | Duration |")
+			fmt.Println("| Result | Duration | Package | Test |")
 			fmt.Println("| - | - | - | - |")
+
 			for i, l := range p.slowest {
 				if i >= p.fl.Slowest {
 					break
 				}
 
 				dur := time.Duration(l.Elapsed * float64(time.Second))
-				fmt.Printf("| %s | %s | %s | %s |\n", l.Action, l.Package, l.Test, dur.String())
+				fmt.Printf("| %s | %s | %s | %s |\n", l.Action, dur.String(), l.Package, l.Test)
 			}
 
 			fmt.Println("</details>")
