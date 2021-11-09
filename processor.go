@@ -180,11 +180,11 @@ func (p *processor) reportFlaky() {
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Tests: %d</summary>\n\n", len(flaky))
 
-			fmt.Println("| P | F | Test |")
+			fmt.Println("| Pass | Fail | Test |")
 			fmt.Println("| - | - | - |")
 
 			for _, ft := range flaky {
-				fmt.Printf("| %s | %d | %d |\n", ft.passed, ft.failed, ft.test)
+				fmt.Printf("| %d | %d | %s |\n", ft.passed, ft.failed, ft.test)
 			}
 
 			fmt.Println("</details>")
