@@ -12,6 +12,24 @@ A tool to aggregate and mine data from JSON reports of Go tests.
 
 ## Usage
 
+```
+Usage: teststat [options] report.jsonl ...
+        Use `-` as file name to read from STDIN.
+  -buckets int
+        number of buckets for histogram (default 10)
+  -markdown
+        render output as markdown
+  -race-depth int
+        stacktrace depth to group similar data races (default 5)
+  -slow duration
+        minimal duration of slow test (default 1s)
+  -slowest int
+        limit number of slowest tests to list (default 30)
+  -version
+        show version and exit
+
+```
+
 ## Examples
 
 ### Read from multiple files
