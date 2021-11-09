@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/bool64/dev/version"
 	"log"
 	"time"
+
+	"github.com/bool64/dev/version"
 )
 
 // Line structure describes single event of `go test -json` report.
@@ -41,6 +42,7 @@ func main() {
 
 	if fl.Version {
 		fmt.Println(version.Info().Version)
+
 		return
 	}
 
