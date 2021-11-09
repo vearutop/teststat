@@ -21,7 +21,7 @@ linters:
   enable-all: true
   disable:
     - tagliatelle
-    - funlen
+    - testpackage
     - lll
     - maligned
     - gochecknoglobals
