@@ -20,8 +20,10 @@ linters-settings:
 linters:
   enable-all: true
   disable:
+    - nestif # TODO review
+    - cyclop # TODO review
     - tagliatelle
-    - funlen
+    - testpackage
     - lll
     - maligned
     - gochecknoglobals
