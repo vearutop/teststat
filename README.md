@@ -82,7 +82,7 @@ Resulting report can be formatted with `-markdown` to make it more readable as i
 go install github.com/vearutop/teststat@latest
 ```
 
-Or download the binary from [releases](releases).
+Or download the binary from [releases](https://github.com/vearutop/teststat/releases).
 
 ## Usage
 
