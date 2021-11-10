@@ -7,8 +7,82 @@
 ![Code lines](https://sloc.xyz/github/vearutop/teststat/?category=code)
 ![Comments](https://sloc.xyz/github/vearutop/teststat/?category=comments)
 
-
 A tool to aggregate and mine data from JSON reports of Go tests.
+
+## Why?
+
+Mature Go projects often have a lot of tests, and not all of them are implemented in the best way. Some tests exhibit
+slightly different behavior and fail randomly.
+
+Such unstable tests are annoying and kill productivity, identifying and improving them can have a huge impact on the
+quality of the project and developer experience.
+
+In general, tests can flake in these ways.
+
+### Dependency on the environment
+
+Tests would pass on one platform and fail on another.
+
+### Dependency on the initial state
+
+Tests would pass on first invocation and fail on consecutive invocations.
+
+Such tests can be identified by running suite multiple times.
+
+```
+go test -count 5 .
+```
+
+In some cases, this failure behavior is expected and desirable, though it reduces the usefulness of `go test` tool by
+noising `-count` mode. You would need to run the test suite multiple times with `-count 1` and compare results to
+identify cases that flake on first invocation.
+
+### Dependency on undetermined or random factors
+
+Tests would pass or fail randomly.
+
+Such behavior almost always indicates a bug either in test or the code, and it needs a fix. Instability can be caused
+by [data races](https://golang.org/doc/articles/race_detector) which lead to subtle bugs and data corruption.
+
+Running tests with race detector may help to expose some issues.
+
+```
+go test -race -count 5 ./...
+```
+
+Same as for data races, there is no guaranteed way to expose flaky tests that depend on random things. Running tests
+multiple times increases chances to hit an abnormal condition, but one can never be sure all issues have been found.
+
+One data race can affect many test cases and "spam" the test output, this can be solved by grouping data races by tails
+of their stack traces, `teststat` accepts `-race-depth int` flag to perform such grouping. The bigger race depth value,
+more race groups are reported.
+
+Go test tool offers machine-readable output with `-json` flag, `teststat` tool can read such output and determine racy,
+flaky or slow tests.
+
+```
+go test -race -json -count 5 ./... | teststat -race-depth 4 -
+```
+
+Another way of using it can be by running test suite multiple times and analyze reports together.
+This can help to expose tests that flake on first invocation.
+
+```
+go test -json ./... > test1.jsonl
+go test -json ./... > test2.jsonl
+go test -json ./... > test3.jsonl
+teststat test1.jsonl test2.jsonl test3.jsonl
+```
+
+Resulting report can be formatted with `-markdown` to make it more readable as issue/pr comment.
+
+## Installation
+
+```
+go install github.com/vearutop/teststat@latest
+```
+
+Or download the binary from [releases](releases).
 
 ## Usage
 
@@ -35,6 +109,7 @@ Usage: teststat [options] report.jsonl ...
 ### Read from multiple files
 
 Once you've collected JSONL test report, you can analyze it with this tool.
+
 ```
 teststat -race-depth 4 -buckets 15 -slowest 7 ./flaky.jsonl ./test.jsonl 
 ```
@@ -83,7 +158,6 @@ Elapsed distribution (seconds):
 ```
 
 </details>
-
 
 ### Read from STDIN
 
