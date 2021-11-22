@@ -205,11 +205,21 @@ func (p *processor) reportFailed() {
 
 			fmt.Println("</details>")
 			fmt.Println()
+		} else {
+			fmt.Println("Failed tests:")
+			for test, output := range p.failures {
+				fmt.Println(test)
+				fmt.Println(strings.Join(output, ""))
+			}
 		}
 	}
 }
 
 func (p *processor) report() {
+	if p.fl.Progress {
+		fmt.Println()
+	}
+
 	p.reportFlaky()
 	p.reportSlowest()
 	p.reportRaces()
@@ -226,7 +236,7 @@ func (p *processor) report() {
 
 		fmt.Println()
 
-		fmt.Println("## Elapsed distribution (seconds)")
+		fmt.Println("## Test time distribution (seconds)")
 		fmt.Println("```")
 		fmt.Println(p.hist.String())
 		fmt.Println("```")
@@ -237,7 +247,7 @@ func (p *processor) report() {
 
 		fmt.Println()
 
-		fmt.Println("Elapsed distribution:")
+		fmt.Println("Test time distribution (seconds):")
 		fmt.Println(p.hist.String())
 	}
 }

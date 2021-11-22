@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"os"
 	"time"
 
@@ -22,6 +23,8 @@ type processor struct {
 
 	passed, failed map[string]int
 	failures       map[string][]string
+
+	done int
 }
 
 type packageStat struct {
@@ -46,17 +49,16 @@ func newProcessor(fl flags) *processor {
 	}
 }
 
-// nolint:funlen
 func (p *processor) process(fn string) (err error) {
-	var f *os.File
+	var r io.Reader
 
 	// Read file.
-	if fn == "-" {
-		f = os.Stdin
+	if fn == "-" || fn == "/dev/stdin" {
+		r = os.Stdin
 	} else {
-		f, err = os.Open(fn) // nolint:gosec
-		if err != nil {
-			return err
+		f, oErr := os.Open(fn) // nolint:gosec
+		if oErr != nil {
+			return oErr
 		}
 
 		defer func() {
@@ -64,16 +66,49 @@ func (p *processor) process(fn string) (err error) {
 				err = clErr
 			}
 		}()
+
+		r = f
 	}
 
-	dec := json.NewDecoder(f)
+	if p.fl.Store != "" {
+		w, err := os.Create(p.fl.Store)
+		if err != nil {
+			return err
+		}
+
+		r = io.TeeReader(r, w)
+	}
+
+	dec := json.NewDecoder(r)
+
+	p.iterate(dec)
+
+	return nil
+}
+
+func (p *processor) progress(status string) {
+	if p.fl.Progress {
+		print(status)
+
+		p.done++
+		if p.done >= 80 {
+			println()
+
+			p.done = 0
+		}
+	}
+}
+
+func (p *processor) iterate(dec *json.Decoder) {
 	outputs := map[string][]string{}
 
 	for {
 		var l Line
 		if err := dec.Decode(&l); err != nil {
 			if !errors.Is(err, io.EOF) {
-				return err
+				log.Println(err)
+
+				continue
 			}
 
 			break
@@ -98,9 +133,11 @@ func (p *processor) process(fn string) (err error) {
 
 			continue
 		case "pass":
+			p.progress(".")
 			p.passed[test]++
 			delete(outputs, test)
 		case "fail":
+			p.progress("F")
 			p.failed[test]++
 			output := outputs[test]
 			delete(outputs, test)
@@ -114,8 +151,6 @@ func (p *processor) process(fn string) (err error) {
 
 		p.countElapsed(l)
 	}
-
-	return nil
 }
 
 func (p *processor) countElapsed(l Line) {
