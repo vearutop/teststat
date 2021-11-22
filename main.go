@@ -24,6 +24,8 @@ type flags struct {
 	HistBuckets int
 	RaceDepth   int
 	Slowest     int
+	Store       string
+	Progress    bool
 	Markdown    bool
 	Version     bool
 }
@@ -35,6 +37,8 @@ func main() {
 	flag.IntVar(&fl.HistBuckets, "buckets", 10, "number of buckets for histogram")
 	flag.IntVar(&fl.RaceDepth, "race-depth", 5, "stacktrace depth to group similar data races")
 	flag.IntVar(&fl.Slowest, "slowest", 30, "limit number of slowest tests to list")
+	flag.StringVar(&fl.Store, "store", "", "store received json lines to file, useful for STDIN")
+	flag.BoolVar(&fl.Progress, "progress", false, "show progress")
 	flag.BoolVar(&fl.Markdown, "markdown", false, "render output as markdown")
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
 
@@ -48,7 +52,7 @@ func main() {
 
 	if flag.NArg() < 1 {
 		fmt.Println("Usage: teststat [options] report.jsonl ...")
-		fmt.Println("	Use `-` as file name to read from STDIN.")
+		fmt.Println("	Use `-` or `/dev/stdin` as file name to read from STDIN.")
 		flag.PrintDefaults()
 
 		return
