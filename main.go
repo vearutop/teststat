@@ -11,12 +11,12 @@ import (
 
 // Line structure describes single event of `go test -json` report.
 type Line struct {
-	Time    string  `json:"Time,omitempty"`
-	Action  string  `json:"Action,omitempty"`
-	Package string  `json:"Package,omitempty"`
-	Test    string  `json:"Test,omitempty"`
-	Output  string  `json:"Output,omitempty"`
-	Elapsed float64 `json:"Elapsed,omitempty"`
+	Time    string   `json:"Time,omitempty"`
+	Action  string   `json:"Action,omitempty"`
+	Package string   `json:"Package,omitempty"`
+	Test    string   `json:"Test,omitempty"`
+	Output  string   `json:"Output,omitempty"`
+	Elapsed *float64 `json:"Elapsed,omitempty"`
 }
 
 type flags struct {

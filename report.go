@@ -54,7 +54,7 @@ func (p *processor) reportFlaky() {
 
 func (p *processor) reportSlowest() {
 	sort.Slice(p.slowest, func(i, j int) bool {
-		return p.slowest[i].Elapsed > p.slowest[j].Elapsed
+		return *p.slowest[i].Elapsed > *p.slowest[j].Elapsed
 	})
 
 	if len(p.slowest) > 0 {
@@ -71,7 +71,7 @@ func (p *processor) reportSlowest() {
 					break
 				}
 
-				dur := time.Duration(l.Elapsed * float64(time.Second))
+				dur := time.Duration(*l.Elapsed * float64(time.Second))
 				fmt.Printf("| %s | %s | %s | %s |\n", l.Action, dur.String(), l.Package, l.Test)
 			}
 
@@ -84,7 +84,7 @@ func (p *processor) reportSlowest() {
 					break
 				}
 
-				dur := time.Duration(l.Elapsed * float64(time.Second))
+				dur := time.Duration(*l.Elapsed * float64(time.Second))
 				fmt.Printf("%s %s %s %s\n", l.Action, l.Package, l.Test, dur.String())
 			}
 		}

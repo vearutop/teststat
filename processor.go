@@ -45,6 +45,7 @@ func newProcessor(fl flags) *processor {
 		hist: &dynhist.Collector{
 			BucketsLimit: fl.HistBuckets,
 			WeightFunc:   dynhist.ExpWidth(1.2, 0.9),
+			PrintSum:     true,
 		},
 	}
 }
@@ -61,7 +62,7 @@ func (p *processor) process(fn string) (err error) {
 			return oErr
 		}
 
-		defer func() {
+		defer func() { // nolint:gosec
 			if clErr := f.Close(); clErr != nil && err == nil {
 				err = clErr
 			}
@@ -116,8 +117,8 @@ func (p *processor) iterate(dec *json.Decoder) {
 
 		// Skipping package-level stats.
 		if l.Test == "" {
-			if l.Elapsed > 0 {
-				p.packageElapsed = append(p.packageElapsed, packageStat{Package: l.Package, Elapsed: l.Elapsed})
+			if l.Elapsed != nil {
+				p.packageElapsed = append(p.packageElapsed, packageStat{Package: l.Package, Elapsed: *l.Elapsed})
 			}
 
 			continue
@@ -154,16 +155,16 @@ func (p *processor) iterate(dec *json.Decoder) {
 }
 
 func (p *processor) countElapsed(l Line) {
-	if l.Elapsed <= 0 {
+	if l.Elapsed == nil {
 		return
 	}
 
-	dur := time.Duration(l.Elapsed * float64(time.Second))
+	dur := time.Duration(*l.Elapsed * float64(time.Second))
 	p.elapsed += dur
 
-	p.hist.Add(l.Elapsed)
+	p.hist.Add(*l.Elapsed)
 
-	if l.Elapsed > 1 {
+	if *l.Elapsed > p.fl.Slow.Seconds() {
 		p.elapsedSlow += dur
 		p.counts["slow"]++
 
