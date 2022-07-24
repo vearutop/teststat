@@ -89,16 +89,22 @@ Or download the binary from [releases](https://github.com/vearutop/teststat/rele
 ```
 Usage: teststat [options] report.jsonl ...
         Use `-` as file name to read from STDIN.
+  -allure string
+        path to write allure report
   -buckets int
         number of buckets for histogram (default 10)
   -markdown
         render output as markdown
+  -progress
+        show progress
   -race-depth int
         stacktrace depth to group similar data races (default 5)
   -slow duration
         minimal duration of slow test (default 1s)
   -slowest int
         limit number of slowest tests to list (default 30)
+  -store string
+        store received json lines to file, useful for STDIN
   -version
         show version and exit
 
