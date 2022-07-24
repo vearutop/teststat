@@ -11,12 +11,12 @@ import (
 
 // Line structure describes single event of `go test -json` report.
 type Line struct {
-	Time    string   `json:"Time,omitempty"`
-	Action  string   `json:"Action,omitempty"`
-	Package string   `json:"Package,omitempty"`
-	Test    string   `json:"Test,omitempty"`
-	Output  string   `json:"Output,omitempty"`
-	Elapsed *float64 `json:"Elapsed,omitempty"`
+	Time    time.Time `json:"Time,omitempty"`
+	Action  string    `json:"Action,omitempty"`
+	Package string    `json:"Package,omitempty"`
+	Test    string    `json:"Test,omitempty"`
+	Output  string    `json:"Output,omitempty"`
+	Elapsed *float64  `json:"Elapsed,omitempty"`
 }
 
 type flags struct {
@@ -27,6 +27,7 @@ type flags struct {
 	Store       string
 	Progress    bool
 	Markdown    bool
+	Allure      string
 	Version     bool
 }
 
@@ -40,6 +41,7 @@ func main() {
 	flag.StringVar(&fl.Store, "store", "", "store received json lines to file, useful for STDIN")
 	flag.BoolVar(&fl.Progress, "progress", false, "show progress")
 	flag.BoolVar(&fl.Markdown, "markdown", false, "render output as markdown")
+	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
 
 	flag.Parse()

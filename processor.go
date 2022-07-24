@@ -1,13 +1,18 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/godogx/allure/report"
+	"github.com/google/uuid"
 	"github.com/vearutop/dynhist-go"
 )
 
@@ -24,6 +29,8 @@ type processor struct {
 	passed, failed map[string]int
 	failures       map[string][]string
 
+	allureFormatter *report.Formatter
+
 	done int
 }
 
@@ -33,7 +40,7 @@ type packageStat struct {
 }
 
 func newProcessor(fl flags) *processor {
-	return &processor{
+	p := &processor{
 		counts:            map[string]int{},
 		dataRaces:         map[string]string{},
 		strippedDataRaces: map[string]string{},
@@ -48,6 +55,24 @@ func newProcessor(fl flags) *processor {
 			PrintSum:     true,
 		},
 	}
+
+	if fl.Allure != "" {
+		name := os.Getenv("ALLURE_SUITE_NAME")
+		if name == "" {
+			name = "Go Test"
+		}
+
+		p.allureFormatter = &report.Formatter{
+			ResultsPath: strings.TrimSuffix(fl.Allure, "/"),
+			Container: &report.Container{
+				UUID:  uuid.New().String(),
+				Start: report.GetTimestampMs(),
+				Name:  name,
+			},
+		}
+	}
+
+	return p
 }
 
 func (p *processor) process(fn string) (err error) {
@@ -62,7 +87,7 @@ func (p *processor) process(fn string) (err error) {
 			return oErr
 		}
 
-		defer func() { // nolint:gosec
+		defer func() {
 			if clErr := f.Close(); clErr != nil && err == nil {
 				err = clErr
 			}
@@ -80,11 +105,9 @@ func (p *processor) process(fn string) (err error) {
 		r = io.TeeReader(r, w)
 	}
 
-	dec := json.NewDecoder(r)
+	scanner := bufio.NewScanner(r)
 
-	p.iterate(dec)
-
-	return nil
+	return p.iterate(scanner)
 }
 
 func (p *processor) progress(status string) {
@@ -100,12 +123,21 @@ func (p *processor) progress(status string) {
 	}
 }
 
-func (p *processor) iterate(dec *json.Decoder) {
+func (p *processor) iterate(scanner *bufio.Scanner) error {
 	outputs := map[string][]string{}
 
-	for {
+	for scanner.Scan() {
+		if err := scanner.Err(); err != nil {
+			return fmt.Errorf("scan failed: %w", err)
+		}
+
+		b := scanner.Bytes()
+		if b[0] != '{' {
+			continue
+		}
+
 		var l Line
-		if err := dec.Decode(&l); err != nil {
+		if err := json.Unmarshal(b, &l); err != nil {
 			if !errors.Is(err, io.EOF) {
 				log.Println(err)
 
@@ -128,6 +160,8 @@ func (p *processor) iterate(dec *json.Decoder) {
 
 		test := l.Package + "." + l.Test
 
+		var output []string
+
 		switch l.Action {
 		case "output":
 			outputs[test] = append(outputs[test], l.Output)
@@ -140,7 +174,7 @@ func (p *processor) iterate(dec *json.Decoder) {
 		case "fail":
 			p.progress("F")
 			p.failed[test]++
-			output := outputs[test]
+			output = outputs[test]
 			delete(outputs, test)
 
 			if !p.checkRace(test, output) {
@@ -151,7 +185,15 @@ func (p *processor) iterate(dec *json.Decoder) {
 		}
 
 		p.countElapsed(l)
+		p.updateAllure(l, output)
 	}
+
+	if p.allureFormatter != nil {
+		p.allureFormatter.Container.Stop = p.allureFormatter.Res.Stop
+		p.allureFormatter.Finish(report.Executor{})
+	}
+
+	return nil
 }
 
 func (p *processor) countElapsed(l Line) {
