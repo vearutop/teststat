@@ -24,7 +24,7 @@ type processor struct {
 	dataRaces, strippedDataRaces map[string]string
 	strippedTests                map[string][]string
 	fl                           flags
-	packageElapsed               []packageStat
+	packageStats                 map[string]packageStat
 
 	passed, failed map[string]int
 	failures       map[string][]string
@@ -37,6 +37,7 @@ type processor struct {
 type packageStat struct {
 	Package string
 	Elapsed float64
+	Cached  bool
 }
 
 func newProcessor(fl flags) *processor {
@@ -54,6 +55,7 @@ func newProcessor(fl flags) *processor {
 			WeightFunc:   dynhist.ExpWidth(1.2, 0.9),
 			PrintSum:     true,
 		},
+		packageStats: map[string]packageStat{},
 	}
 
 	if fl.Allure != "" {
@@ -79,7 +81,7 @@ func (p *processor) process(fn string) (err error) {
 	var r io.Reader
 
 	// Read file.
-	if fn == "-" || fn == "/dev/stdin" {
+	if fn == "-" || fn == "/dev/stdin" || fn == "" {
 		r = os.Stdin
 	} else {
 		f, oErr := os.Open(fn) //nolint:gosec
@@ -106,6 +108,7 @@ func (p *processor) process(fn string) (err error) {
 	}
 
 	scanner := bufio.NewScanner(r)
+	scanner.Buffer(make([]byte, 0, 1e7), 1e7)
 
 	return p.iterate(scanner)
 }
@@ -119,6 +122,26 @@ func (p *processor) progress(status string) {
 			println()
 
 			p.done = 0
+		}
+	}
+}
+
+func (p *processor) pkgLine(l Line) {
+	if l.Elapsed != nil {
+		ps := p.packageStats[l.Package]
+		ps.Elapsed = *l.Elapsed
+		ps.Package = l.Package
+		p.packageStats[l.Package] = ps
+	}
+
+	if l.Action == "output" {
+		if strings.Contains(l.Output, "(cached)") {
+			p.counts["pkg_cached"]++
+
+			ps := p.packageStats[l.Package]
+			ps.Cached = true
+			ps.Package = l.Package
+			p.packageStats[l.Package] = ps
 		}
 	}
 }
@@ -149,9 +172,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		// Skipping package-level stats.
 		if l.Test == "" {
-			if l.Elapsed != nil {
-				p.packageElapsed = append(p.packageElapsed, packageStat{Package: l.Package, Elapsed: *l.Elapsed})
-			}
+			p.pkgLine(l)
 
 			continue
 		}
@@ -192,6 +213,8 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		p.allureFormatter.Container.Stop = p.allureFormatter.Res.Stop
 		p.allureFormatter.Finish(report.Executor{})
 	}
+
+	p.counts["pkg_total"] = len(p.packageStats)
 
 	return nil
 }
