@@ -156,21 +156,35 @@ func (p *processor) reportRaces() {
 }
 
 func (p *processor) reportPackages() {
-	if len(p.packageElapsed) > 0 {
-		sort.Slice(p.packageElapsed, func(i, j int) bool {
-			return p.packageElapsed[i].Elapsed > p.packageElapsed[j].Elapsed
+	if len(p.packageStats) > 0 {
+		pstats := make([]packageStat, 0, len(p.packageStats))
+		cached := 0
+
+		for _, v := range p.packageStats {
+			if v.Cached {
+				cached++
+			}
+
+			pstats = append(pstats, v)
+		}
+
+		sort.Slice(pstats, func(i, j int) bool {
+			return pstats[i].Elapsed > pstats[j].Elapsed
 		})
 
 		if p.fl.Markdown {
 			fmt.Println("## Slowest test packages")
 			fmt.Println("<details>")
-			fmt.Printf("<summary>Total packages with tests: %d</summary>\n\n", len(p.packageElapsed))
+			fmt.Printf("<summary>Total packages with tests: %d</summary>\n\n", len(p.packageStats))
 
 			fmt.Println("| Duration | Package |")
 			fmt.Println("| - | - |")
 
-			for i, ps := range p.packageElapsed {
-				dur := time.Duration(ps.Elapsed * float64(time.Second))
+			for i, ps := range pstats {
+				dur := time.Duration(ps.Elapsed * float64(time.Second)).String()
+				if ps.Cached {
+					dur += " (cached)"
+				}
 
 				fmt.Printf("| %s | %s |\n", dur, ps.Package)
 
