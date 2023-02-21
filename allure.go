@@ -1,3 +1,4 @@
+// Package main provides teststat utility.
 package main
 
 import (
