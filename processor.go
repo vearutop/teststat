@@ -132,7 +132,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		}
 
 		b := scanner.Bytes()
-		if b[0] != '{' {
+		if len(b) == 0 || b[0] != '{' {
 			continue
 		}
 
