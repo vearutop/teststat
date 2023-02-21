@@ -9,7 +9,7 @@ import (
 func TestThatFlakes(t *testing.T) {
 	t.Parallel()
 
-	if rand.Int()%3 == 0 {
+	if rand.Int()%3 == 0 { //nolint
 		return
 	}
 
@@ -19,7 +19,7 @@ func TestThatFlakes(t *testing.T) {
 func TestThatFlakesToo(t *testing.T) {
 	t.Parallel()
 
-	if rand.Int()%5 == 0 {
+	if rand.Int()%5 == 0 { //nolint
 		return
 	}
 
@@ -29,7 +29,7 @@ func TestThatFlakesToo(t *testing.T) {
 func TestThatIsSometimesSlow(t *testing.T) {
 	t.Parallel()
 
-	if rand.Int()%3 == 0 {
+	if rand.Int()%3 == 0 { //nolint
 		time.Sleep(5 * time.Second)
 	}
 }

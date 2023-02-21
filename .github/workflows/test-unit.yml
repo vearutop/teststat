@@ -78,7 +78,8 @@ jobs:
       - name: Test
         id: test
         run: |
-          make test-unit
+          go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report.jsonl
+          go run . -markdown test-report.jsonl
           go tool cover -func=./unit.coverprofile > unit.txt
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
