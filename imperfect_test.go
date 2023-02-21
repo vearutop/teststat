@@ -6,6 +6,12 @@ import (
 	"time"
 )
 
+func TestThatIsRacy(t *testing.T) {
+	a := 1
+	go func() { a++ }()
+	go func() { a++ }()
+}
+
 func TestThatFlakes(t *testing.T) {
 	t.Parallel()
 
