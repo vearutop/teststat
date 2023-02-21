@@ -79,7 +79,9 @@ jobs:
         id: test
         run: |
           go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report.jsonl -
-          go run . -markdown test-report.jsonl
+          REPORT=$(go run . -markdown test-report.jsonl)
+          echo "${REPORT}"
+          echo "report<<EOF" >> $GITHUB_OUTPUT && echo "$REPORT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           go tool cover -func=./unit.coverprofile > unit.txt
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
@@ -124,6 +126,8 @@ jobs:
             ${{ steps.annotate.outputs.diff }}
             
             </details>
+            
+            ${{ steps.test.outputs.report }}
 
       - name: Store base coverage
         if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
