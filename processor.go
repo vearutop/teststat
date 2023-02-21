@@ -82,7 +82,7 @@ func (p *processor) process(fn string) (err error) {
 	if fn == "-" || fn == "/dev/stdin" {
 		r = os.Stdin
 	} else {
-		f, oErr := os.Open(fn) // nolint:gosec
+		f, oErr := os.Open(fn) //nolint:gosec
 		if oErr != nil {
 			return oErr
 		}
