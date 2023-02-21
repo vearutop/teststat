@@ -87,6 +87,12 @@ jobs:
           echo "${TOTAL}"
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
 
+      - name: Test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: test-report.jsonl
+
       - name: Annotate missing test coverage
         id: annotate
         if: matrix.go-version == env.COV_GO_VERSION && github.event.pull_request.base.sha != ''

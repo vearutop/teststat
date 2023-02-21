@@ -8,6 +8,7 @@ import (
 
 func TestThatIsRacy(t *testing.T) {
 	a := 1
+
 	go func() { a++ }()
 	go func() { a++ }()
 }
