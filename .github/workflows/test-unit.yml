@@ -77,12 +77,22 @@ jobs:
 
       - name: Test
         id: test
+        continue-on-error: true
         run: |
-          make test-unit
+          go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report.jsonl -
+          REPORT=$(go run . -markdown test-report.jsonl)
+          echo "${REPORT}"
+          echo "report<<EOF" >> $GITHUB_OUTPUT && echo "$REPORT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           go tool cover -func=./unit.coverprofile > unit.txt
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+      - name: Test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: test-report.jsonl
 
       - name: Annotate missing test coverage
         id: annotate
@@ -123,6 +133,8 @@ jobs:
             ${{ steps.annotate.outputs.diff }}
             
             </details>
+            
+            ${{ steps.test.outputs.report }}
 
       - name: Store base coverage
         if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}

@@ -28,7 +28,7 @@ func (p *processor) reportFlaky() {
 		p.counts["flaky"] = len(flaky)
 
 		if p.fl.Markdown {
-			fmt.Println("## Flaky tests")
+			fmt.Println("### Flaky tests")
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Tests: %d</summary>\n\n", len(flaky))
 
@@ -59,7 +59,7 @@ func (p *processor) reportSlowest() {
 
 	if len(p.slowest) > 0 {
 		if p.fl.Markdown {
-			fmt.Println("## Slow tests")
+			fmt.Println("### Slow tests")
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Total slow runs: %d</summary>\n\n", len(p.slowest))
 
@@ -104,7 +104,7 @@ func (p *processor) reportRaces() {
 		sort.Strings(keys)
 
 		if p.fl.Markdown {
-			fmt.Println("## Data races")
+			fmt.Println("### Data races")
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Total data races: %d, unique: %d</summary>\n\n",
 				len(p.dataRaces), len(p.strippedDataRaces))
@@ -173,7 +173,7 @@ func (p *processor) reportPackages() {
 		})
 
 		if p.fl.Markdown {
-			fmt.Println("## Slowest test packages")
+			fmt.Println("### Slowest test packages")
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Total packages with tests: %d</summary>\n\n", len(p.packageStats))
 
@@ -202,7 +202,7 @@ func (p *processor) reportPackages() {
 func (p *processor) reportFailed() {
 	if len(p.failures) > 0 {
 		if p.fl.Markdown {
-			fmt.Println("## Failed tests")
+			fmt.Println("### Failed tests")
 			fmt.Println("<details>")
 			fmt.Printf("<summary>Failed: %d</summary>\n\n", len(p.failures))
 
@@ -241,7 +241,7 @@ func (p *processor) report() {
 	p.reportFailed()
 
 	if p.fl.Markdown {
-		fmt.Println("## Metrics")
+		fmt.Println("### Metrics")
 		fmt.Println()
 
 		fmt.Printf("```\n%v\n```\n\n", p.counts)
@@ -250,7 +250,7 @@ func (p *processor) report() {
 
 		fmt.Println()
 
-		fmt.Println("## Test time distribution (seconds)")
+		fmt.Println("### Test time distribution (seconds)")
 		fmt.Println("```")
 		fmt.Println(p.hist.String())
 		fmt.Println("```")
