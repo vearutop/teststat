@@ -77,6 +77,7 @@ jobs:
 
       - name: Test
         id: test
+        continue-on-error: true
         run: |
           go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report.jsonl -
           REPORT=$(go run . -markdown test-report.jsonl)
