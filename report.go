@@ -239,7 +239,15 @@ func (p *processor) storeFailed() {
 	failedRegex := ""
 
 	for test := range p.failed {
-		failedRegex += "^" + path.Ext(test)[1:] + "$|"
+		testName := strings.TrimPrefix(path.Ext(test), ".")
+
+		if testName == "" {
+			fmt.Println("malformed test name:", test)
+
+			continue
+		}
+
+		failedRegex += "^" + testName + "$|"
 	}
 
 	failedRegex = "(" + failedRegex[0:len(failedRegex)-1] + ")"
