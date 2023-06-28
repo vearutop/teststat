@@ -81,9 +81,9 @@ jobs:
         run: |
           go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report.jsonl -failed-tests failed1.txt -
           # retry 1, run tests if failed1.txt exists, pass otherwise
-          test ! -f failed1.txt || go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -run $(cat failed1.txt) -json ./... | go run . -progress -store test-report2.jsonl -failed-tests failed2.txt -
+          test ! -f failed1.txt || echo "Retry 1" && go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -run $(cat failed1.txt) -json ./... | go run . -progress -store test-report2.jsonl -failed-tests failed2.txt -
           # retry 2, run tests if failed2.txt exists, pass otherwise
-          test ! -f failed2.txt || go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -run $(cat failed2.txt) -json ./... | go run . -progress -store test-report3.jsonl -failed-tests failed3.txt -
+          test ! -f failed2.txt || echo "Retry 2" && go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -run $(cat failed2.txt) -json ./... | go run . -progress -store test-report3.jsonl -failed-tests failed3.txt -
           REPORT=$(go run . -markdown test-report*.jsonl)
           echo "${REPORT}"
           echo "report<<EOF" >> $GITHUB_OUTPUT && echo "$REPORT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
