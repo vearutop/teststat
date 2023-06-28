@@ -84,6 +84,13 @@ go install github.com/vearutop/teststat@latest
 
 Or download the binary from [releases](https://github.com/vearutop/teststat/releases).
 
+### Linux AMD64
+
+```
+wget -q https://github.com/vearutop/teststat/releases/latest/download/linux_amd64.tar.gz && tar xf linux_amd64.tar.gz && rm linux_amd64.tar.gz
+./teststat -version
+```
+
 ## Usage
 
 ```
