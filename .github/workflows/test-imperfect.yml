@@ -124,7 +124,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: imperfect-test
           message: |
-            ### Unit Test Coverage
+            ### Imperfect Test Coverage
             ${{ steps.test.outputs.total }}
             ${{ steps.annotate.outputs.total }}
             <details><summary>Coverage of changed lines</summary>
