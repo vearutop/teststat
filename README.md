@@ -100,12 +100,16 @@ Usage: teststat [options] report.jsonl ...
         path to write allure report
   -buckets int
         number of buckets for histogram (default 10)
+  -failed-tests string
+        store regexp of failed tests to a file, useful for a retry run
   -markdown
         render output as markdown
   -progress
         show progress
   -race-depth int
         stacktrace depth to group similar data races (default 5)
+  -skip-report
+        skip reporting, useful for multiple retries
   -slow duration
         minimal duration of slow test (default 1s)
   -slowest int
