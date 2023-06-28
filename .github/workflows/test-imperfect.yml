@@ -152,6 +152,8 @@ jobs:
           file: ./unit.coverprofile
           flags: unittests
 
-      - name: Check failure
-        if: ${{ steps.test.outputs.failed }} == "true"
-        run: exit 1
+      - name: Check test result
+        if: steps.test.outputs.failed == 'true'
+        run: |
+          echo "::error ::Test failed, see Test step for details"
+          exit 1
