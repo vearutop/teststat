@@ -229,25 +229,35 @@ func (p *processor) reportFailed() {
 			}
 		}
 	}
+}
 
-	if p.fl.FailedTests != "" {
-		failedRegex := ""
+func (p *processor) storeFailed() {
+	if p.fl.FailedTests == "" {
+		return
+	}
 
-		for test := range p.failed {
-			failedRegex += "^" + path.Ext(test)[1:] + "$|"
-		}
+	failedRegex := ""
 
-		failedRegex = "(" + failedRegex[0:len(failedRegex)-1] + ")"
+	for test := range p.failed {
+		failedRegex += "^" + path.Ext(test)[1:] + "$|"
+	}
 
-		if err := os.WriteFile(p.fl.FailedTests, []byte(failedRegex), 0o600); err != nil {
-			fmt.Println("failed to store failed tests regexp: " + err.Error())
-		}
+	failedRegex = "(" + failedRegex[0:len(failedRegex)-1] + ")"
+
+	if err := os.WriteFile(p.fl.FailedTests, []byte(failedRegex), 0o600); err != nil {
+		fmt.Println("failed to store failed tests regexp: " + err.Error())
 	}
 }
 
 func (p *processor) report() {
 	if p.fl.Progress {
 		fmt.Println()
+	}
+
+	p.storeFailed()
+
+	if p.fl.SkipReport {
+		return
 	}
 
 	p.reportFlaky()
