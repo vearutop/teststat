@@ -1,3 +1,6 @@
+//go:build imperfect
+// +build imperfect
+
 package foo_test
 
 import (

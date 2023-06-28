@@ -17,17 +17,18 @@ import (
 )
 
 type processor struct {
-	counts                       map[string]int
-	elapsed, elapsedSlow         time.Duration
-	hist                         *dynhist.Collector
-	slowest                      []Line
-	dataRaces, strippedDataRaces map[string]string
-	strippedTests                map[string][]string
-	fl                           flags
-	packageStats                 map[string]packageStat
+	counts               map[string]int
+	elapsed, elapsedSlow time.Duration
+	hist                 *dynhist.Collector
+	slowest              []Line
+	dataRaces            map[test]string
+	strippedDataRaces    map[string]string
+	strippedTests        map[string][]string
+	fl                   flags
+	packageStats         map[string]packageStat
 
-	passed, failed map[string]int
-	failures       map[string][]string
+	passed, failed map[test]int
+	failures       map[test][]string
 
 	allureFormatter *report.Formatter
 
@@ -43,12 +44,12 @@ type packageStat struct {
 func newProcessor(fl flags) *processor {
 	p := &processor{
 		counts:            map[string]int{},
-		dataRaces:         map[string]string{},
+		dataRaces:         map[test]string{},
 		strippedDataRaces: map[string]string{},
 		strippedTests:     map[string][]string{},
-		passed:            map[string]int{},
-		failed:            map[string]int{},
-		failures:          map[string][]string{},
+		passed:            map[test]int{},
+		failed:            map[test]int{},
+		failures:          map[test][]string{},
 		fl:                fl,
 		hist: &dynhist.Collector{
 			BucketsLimit: fl.HistBuckets,
@@ -146,8 +147,16 @@ func (p *processor) pkgLine(l Line) {
 	}
 }
 
+type test struct {
+	pkg, fn string
+}
+
+func (t test) String() string {
+	return t.pkg + "." + t.fn
+}
+
 func (p *processor) iterate(scanner *bufio.Scanner) error {
-	outputs := map[string][]string{}
+	outputs := map[test][]string{}
 
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
@@ -179,30 +188,30 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		p.counts[l.Action]++
 
-		test := l.Package + "." + l.Test
+		t := test{pkg: l.Package, fn: l.Test}
 
 		var output []string
 
 		switch l.Action {
 		case "output":
-			outputs[test] = append(outputs[test], l.Output)
+			outputs[t] = append(outputs[t], l.Output)
 
 			continue
 		case "pass":
 			p.progress(".")
-			p.passed[test]++
-			delete(outputs, test)
+			p.passed[t]++
+			delete(outputs, t)
 		case "fail":
 			p.progress("F")
-			p.failed[test]++
-			output = outputs[test]
-			delete(outputs, test)
+			p.failed[t]++
+			output = outputs[t]
+			delete(outputs, t)
 
-			if !p.checkRace(test, output) {
-				p.failures[test] = output
+			if !p.checkRace(t, output) {
+				p.failures[t] = output
 			}
 		case "skip":
-			delete(outputs, test)
+			delete(outputs, t)
 		}
 
 		p.countElapsed(l)
@@ -238,6 +247,6 @@ func (p *processor) countElapsed(l Line) {
 }
 
 type flakyTest struct {
-	test           string
+	test           test
 	passed, failed int
 }
