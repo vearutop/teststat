@@ -91,6 +91,8 @@ jobs:
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          test ! -f failed3.txt || echo "Tests failed after 3 retries"
+          test ! -f failed3.txt || echo "failed=true" >> $GITHUB_OUTPUT
 
       - name: Test report
         uses: actions/upload-artifact@v3
@@ -150,3 +152,7 @@ jobs:
         with:
           file: ./unit.coverprofile
           flags: unittests
+
+      - name: Check failure
+        if: ${{ steps.test.outputs.failed }} == "true"
+        run: exit 1
