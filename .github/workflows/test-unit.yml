@@ -84,6 +84,9 @@ jobs:
           test ! -f failed1.txt || echo "Retry 1" && go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -run $(cat failed1.txt) -json ./... | go run . -progress -store test-report2.jsonl -skip-report -failed-tests failed2.txt -
           # retry 2, run tests if failed2.txt exists, pass otherwise
           test ! -f failed2.txt || echo "Retry 2" && go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -run $(cat failed2.txt) -json ./... | go run . -progress -store test-report3.jsonl -skip-report -failed-tests failed3.txt -
+          # retry 3, run tests if failed2.txt exists, pass otherwise
+          test ! -f failed3.txt || echo "Retry 3" && go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -run $(cat failed3.txt) -json ./... | go run . -progress -store test-report4.jsonl -skip-report -failed-tests failed4.txt -
+
           REPORT=$(go run . -markdown test-report*.jsonl)
           echo "${REPORT}"
           echo "report<<EOF" >> $GITHUB_OUTPUT && echo "$REPORT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
@@ -91,8 +94,8 @@ jobs:
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
-          test ! -f failed3.txt || echo "Tests failed after 3 retries"
-          test ! -f failed3.txt || echo "failed=true" >> $GITHUB_OUTPUT
+          test ! -f failed4.txt || echo "Tests failed after 4 retries"
+          test ! -f failed4.txt || echo "failed=true" >> $GITHUB_OUTPUT
 
       - name: Test report
         uses: actions/upload-artifact@v3
