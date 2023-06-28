@@ -231,7 +231,7 @@ func (p *processor) reportFailed() {
 }
 
 func (p *processor) storeFailed() {
-	if p.fl.FailedTests == "" {
+	if p.fl.FailedTests == "" || len(p.failed) == 0 {
 		return
 	}
 
