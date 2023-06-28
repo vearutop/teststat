@@ -9,6 +9,11 @@ import (
 func TestThatIsRacy(t *testing.T) {
 	t.Parallel()
 
+	// Sometimes passes.
+	if rand.Int()%3 == 0 { //nolint
+		return
+	}
+
 	a := 1
 
 	for i := 0; i < 1000; i++ {

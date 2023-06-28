@@ -25,8 +25,10 @@ type flags struct {
 	RaceDepth   int
 	Slowest     int
 	Store       string
+	FailedTests string
 	Progress    bool
 	Markdown    bool
+	SkipReport  bool
 	Allure      string
 	Version     bool
 }
@@ -39,9 +41,12 @@ func main() {
 	flag.IntVar(&fl.RaceDepth, "race-depth", 5, "stacktrace depth to group similar data races")
 	flag.IntVar(&fl.Slowest, "slowest", 30, "limit number of slowest tests to list")
 	flag.StringVar(&fl.Store, "store", "", "store received json lines to file, useful for STDIN")
+	flag.StringVar(&fl.FailedTests, "failed-tests", "", "store regexp of failed tests to a file, useful for a retry run")
 	flag.BoolVar(&fl.Progress, "progress", false, "show progress")
 	flag.BoolVar(&fl.Markdown, "markdown", false, "render output as markdown")
+	flag.BoolVar(&fl.SkipReport, "skip-report", false, "skip reporting, useful for multiple retries")
 	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")
+
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
 
 	flag.Parse()

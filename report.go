@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path"
 	"sort"
 	"strings"
 	"time"
@@ -229,9 +231,33 @@ func (p *processor) reportFailed() {
 	}
 }
 
+func (p *processor) storeFailed() {
+	if p.fl.FailedTests == "" {
+		return
+	}
+
+	failedRegex := ""
+
+	for test := range p.failed {
+		failedRegex += "^" + path.Ext(test)[1:] + "$|"
+	}
+
+	failedRegex = "(" + failedRegex[0:len(failedRegex)-1] + ")"
+
+	if err := os.WriteFile(p.fl.FailedTests, []byte(failedRegex), 0o600); err != nil {
+		fmt.Println("failed to store failed tests regexp: " + err.Error())
+	}
+}
+
 func (p *processor) report() {
 	if p.fl.Progress {
 		fmt.Println()
+	}
+
+	p.storeFailed()
+
+	if p.fl.SkipReport {
+		return
 	}
 
 	p.reportFlaky()
