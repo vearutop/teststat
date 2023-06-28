@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func (p *processor) checkRace(test string, output []string) bool {
+func (p *processor) checkRace(t test, output []string) bool {
 	raceFound := false
 	raceFailed := false
 
@@ -31,11 +31,11 @@ func (p *processor) checkRace(test string, output []string) bool {
 	}
 
 	p.counts["data_race"]++
-	p.dataRaces[test] = strings.Join(output, "")
+	p.dataRaces[t] = strings.Join(output, "")
 
 	sk := strippedKey(stripDataRace(output), p.fl.RaceDepth)
 	p.strippedDataRaces[sk] = strings.Join(output, "")
-	p.strippedTests[sk] = append(p.strippedTests[sk], test)
+	p.strippedTests[sk] = append(p.strippedTests[sk], t.String())
 
 	return true
 }

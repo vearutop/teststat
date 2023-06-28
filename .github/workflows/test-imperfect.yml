@@ -1,10 +1,6 @@
 # This script is provided by github.com/bool64/dev.
-name: test-unit
+name: test-imperfect
 on:
-  push:
-    branches:
-      - master
-      - main
   pull_request:
 
 # Cancel the workflow in progress in newer build is about to start.
@@ -79,13 +75,13 @@ jobs:
         id: test
         continue-on-error: true
         run: |
-          go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report.jsonl -skip-report -failed-tests failed1.txt -
+          go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report.jsonl -skip-report -failed-tests failed1.txt -
           # retry 1, run tests if failed1.txt exists, pass otherwise
-          test ! -f failed1.txt || (echo "Retry 1" && go test -short -race -run $(cat failed1.txt) -json ./... | go run . -progress -store test-report2.jsonl -skip-report -failed-tests failed2.txt -)
+          test ! -f failed1.txt || (echo "Retry 1" && cat failed1.txt && go test -tags imperfect -short -race -run $(cat failed1.txt) -json ./... | go run . -progress -store test-report2.jsonl -skip-report -failed-tests failed2.txt -)
           # retry 2, run tests if failed2.txt exists, pass otherwise
-          test ! -f failed2.txt || (echo "Retry 2" && go test -short -race -run $(cat failed2.txt) -json ./... | go run . -progress -store test-report3.jsonl -skip-report -failed-tests failed3.txt -)
+          test ! -f failed2.txt || (echo "Retry 2" && cat failed2.txt && go test -tags imperfect -short -race -run $(cat failed2.txt) -json ./... | go run . -progress -store test-report3.jsonl -skip-report -failed-tests failed3.txt -)
           # retry 3, run tests if failed3.txt exists, pass otherwise
-          test ! -f failed3.txt || (echo "Retry 3" && go test -short -race -run $(cat failed3.txt) -json ./... | go run . -progress -store test-report4.jsonl -skip-report -failed-tests failed4.txt -)
+          test ! -f failed3.txt || (echo "Retry 3" && cat failed3.txt && go test -tags imperfect -short -race -run $(cat failed3.txt) -json ./... | go run . -progress -store test-report4.jsonl -skip-report -failed-tests failed4.txt -)
 
           REPORT=$(go run . -markdown test-report*.jsonl)
           echo "${REPORT}"
@@ -126,9 +122,9 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: unit-test
+          header: imperfect-test
           message: |
-            ### Unit Test Coverage
+            ### Imperfect Test Coverage
             ${{ steps.test.outputs.total }}
             ${{ steps.annotate.outputs.total }}
             <details><summary>Coverage of changed lines</summary>

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
 	"sort"
 	"strings"
 	"time"
@@ -12,18 +11,18 @@ import (
 func (p *processor) reportFlaky() {
 	var flaky []flakyTest
 
-	for test, count := range p.failed {
-		if p.passed[test] != 0 {
+	for t, count := range p.failed {
+		if p.passed[t] != 0 {
 			flaky = append(flaky, flakyTest{
-				test:   test,
-				passed: p.passed[test],
+				test:   t,
+				passed: p.passed[t],
 				failed: count,
 			})
 		}
 	}
 
 	sort.Slice(flaky, func(i, j int) bool {
-		return flaky[i].test > flaky[j].test
+		return flaky[i].test.String() > flaky[j].test.String()
 	})
 
 	if len(flaky) > 0 {
@@ -232,22 +231,14 @@ func (p *processor) reportFailed() {
 }
 
 func (p *processor) storeFailed() {
-	if p.fl.FailedTests == "" {
+	if p.fl.FailedTests == "" || len(p.failed) == 0 {
 		return
 	}
 
 	failedRegex := ""
 
-	for test := range p.failed {
-		testName := strings.TrimPrefix(path.Ext(test), ".")
-
-		if testName == "" {
-			fmt.Println("malformed test name:", test)
-
-			continue
-		}
-
-		failedRegex += "^" + testName + "$|"
+	for t := range p.failed {
+		failedRegex += "^" + t.fn + "$|"
 	}
 
 	failedRegex = "(" + failedRegex[0:len(failedRegex)-1] + ")"
