@@ -95,64 +95,68 @@ func (p *processor) reportSlowest() {
 }
 
 func (p *processor) reportRaces() {
-	if len(p.strippedDataRaces) > 0 {
-		var keys []string
+	if len(p.strippedDataRaces) == 0 {
+		return
+	}
 
-		for k := range p.strippedDataRaces {
-			keys = append(keys, k)
-		}
+	keys := make([]string, 0, len(p.strippedDataRaces))
 
-		sort.Strings(keys)
+	for k := range p.strippedDataRaces {
+		keys = append(keys, k)
+	}
 
-		if p.fl.Markdown {
-			fmt.Println("### Data races")
+	sort.Strings(keys)
+
+	if p.fl.Markdown {
+		fmt.Println("### Data races")
+		fmt.Println("<details>")
+		fmt.Printf("<summary>Total data races: %d, unique: %d</summary>\n\n",
+			len(p.dataRaces), len(p.strippedDataRaces))
+
+		for _, k := range keys {
+			r := shortedDataRace(p.strippedDataRaces[k])
+			t := p.strippedTests[k]
+
+			t = uniq(t)
+
 			fmt.Println("<details>")
-			fmt.Printf("<summary>Total data races: %d, unique: %d</summary>\n\n",
-				len(p.dataRaces), len(p.strippedDataRaces))
+			fmt.Printf("<summary><code>%s</code></summary>\n\n", t[0])
 
-			for _, k := range keys {
-				r := p.strippedDataRaces[k]
-				t := p.strippedTests[k]
+			if len(t) > 1 {
+				fmt.Println("Other affected tests:")
+				fmt.Println("```")
 
-				fmt.Println("<details>")
-				fmt.Printf("<summary><code>%s</code></summary>\n\n", t[0])
-
-				if len(t) > 1 {
-					fmt.Println("Other affected tests:")
-					fmt.Println("```")
-
-					for _, tt := range t[1:] {
-						fmt.Println(tt)
-					}
-
-					fmt.Println("```")
+				for _, tt := range t[1:] {
+					fmt.Println(tt)
 				}
 
-				fmt.Println("\n```")
-				fmt.Println(r)
 				fmt.Println("```")
-				fmt.Println("</details>")
-				fmt.Println()
 			}
 
+			fmt.Println("\n```")
+			fmt.Println(r)
+			fmt.Println("```")
 			fmt.Println("</details>")
 			fmt.Println()
-		} else {
-			fmt.Println("Data races:")
+		}
 
-			for _, k := range keys {
-				t := p.strippedTests[k]
+		fmt.Println("</details>")
+		fmt.Println()
+	} else {
+		fmt.Println("Data races:")
 
-				if len(t) > 3 {
-					t = append(t[0:3], "...")
-				}
+		for _, k := range keys {
+			t := p.strippedTests[k]
 
-				fmt.Println(strings.Join(t, ", "))
-				fmt.Println(p.strippedDataRaces[k])
+			if len(t) > 3 {
+				t = append(t[0:3], "...")
 			}
 
-			fmt.Println()
+			fmt.Println(strings.Join(t, ", "))
+			fmt.Println(shortedDataRace(p.strippedDataRaces[k]))
 		}
+
+		fmt.Println()
 	}
 }
 
@@ -289,4 +293,41 @@ func (p *processor) report() {
 		fmt.Println("Test time distribution (seconds):")
 		fmt.Println(p.hist.String())
 	}
+}
+
+func uniq(a []string) []string {
+	if len(a) <= 1 {
+		return a
+	}
+
+	idx := map[string]bool{}
+	res := make([]string, 0, len(a))
+
+	for _, s := range a {
+		if idx[s] {
+			continue
+		}
+
+		res = append(res, s)
+		idx[s] = true
+	}
+
+	return res
+}
+
+func shortedDataRace(r string) string {
+	maxLen := 5000
+
+	if len(r) < maxLen {
+		return r
+	}
+
+	p := strings.Index(r, "WARNING: DATA RACE")
+	p2 := strings.Index(r[p+1:], "WARNING: DATA RACE")
+
+	if p2 > 0 {
+		return r[0:p+p2] + "\n...... other data race(s) truncated\n"
+	}
+
+	return r
 }
