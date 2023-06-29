@@ -93,6 +93,7 @@ func newProcessor(fl flags) *processor {
 			PrintSum:     true,
 		},
 		packageStats: map[string]packageStat{},
+		prLast:       time.Now(),
 	}
 
 	if fl.Allure != "" {
@@ -153,34 +154,34 @@ func (p *processor) process(fn string) (err error) {
 func (p *processor) status() string {
 	c := p.counts
 
-	res := fmt.Sprintf("%d passed", c.Pass)
+	res := fmt.Sprintf("passed: %d", c.Pass)
 
 	if c.Fail != 0 {
-		res += fmt.Sprintf(", %d failed", c.Fail)
+		res += fmt.Sprintf(", failed: %d", c.Fail)
 	}
 
 	if c.Skip != 0 {
-		res += fmt.Sprintf(", %d skipped", c.Skip)
+		res += fmt.Sprintf(", skipped: %d", c.Skip)
 	}
 
 	if c.DataRace != 0 {
-		res += fmt.Sprintf(", %d data races", c.DataRace)
+		res += fmt.Sprintf(", data races: %d", c.DataRace)
 	}
 
 	if c.Flaky != 0 {
-		res += fmt.Sprintf(", %d flaky", c.Flaky)
+		res += fmt.Sprintf(", flaky: %d", c.Flaky)
 	}
 
 	if c.Slow != 0 {
-		res += fmt.Sprintf(", %d slow", c.Slow)
+		res += fmt.Sprintf(", slow: %d", c.Slow)
 	}
 
 	if c.PkgCached != 0 {
-		res += fmt.Sprintf(", %d cached packages", c.PkgCached)
+		res += fmt.Sprintf(", cached packages: %d", c.PkgCached)
 	}
 
-	if c.PkgCached != 0 {
-		res += fmt.Sprintf(", %d total packages", c.PkgTotal)
+	if c.PkgTotal != 0 {
+		res += fmt.Sprintf(", total packages: %d", c.PkgTotal)
 	}
 
 	return res

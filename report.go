@@ -253,7 +253,7 @@ func (p *processor) storeFailed() {
 }
 
 func (p *processor) report() {
-	if p.fl.Progress {
+	if p.prStatus != "" {
 		fmt.Println()
 	}
 
@@ -284,7 +284,7 @@ func (p *processor) report() {
 		fmt.Println(p.hist.String())
 		fmt.Println("```")
 	} else {
-		fmt.Println("Metrics:", p.status())
+		fmt.Println("Total", p.status())
 		fmt.Println("Elapsed:", p.elapsed.String())
 		fmt.Println("Slow:", p.elapsedSlow.String())
 
