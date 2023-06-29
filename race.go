@@ -30,7 +30,7 @@ func (p *processor) checkRace(t test, output []string) bool {
 		return false
 	}
 
-	p.counts["data_race"]++
+	p.counts.DataRace++
 	p.dataRaces[t] = strings.Join(output, "")
 
 	sk := strippedKey(stripDataRace(output), p.fl.RaceDepth)

@@ -16,8 +16,44 @@ import (
 	"github.com/vearutop/dynhist-go"
 )
 
+type counts struct {
+	DataRace  int
+	Fail      int
+	Flaky     int
+	Output    int
+	Pass      int
+	PkgTotal  int
+	PkgCached int
+	Run       int
+	Skip      int
+	Slow      int
+}
+
+const (
+	fail   = "fail"
+	pass   = "pass"
+	skip   = "skip"
+	output = "output"
+	run    = "run"
+)
+
+func (c *counts) add(key string) {
+	switch key {
+	case fail:
+		c.Fail++
+	case pass:
+		c.Pass++
+	case output:
+		c.Output++
+	case run:
+		c.Run++
+	case skip:
+		c.Skip++
+	}
+}
+
 type processor struct {
-	counts               map[string]int
+	counts               counts
 	elapsed, elapsedSlow time.Duration
 	hist                 *dynhist.Collector
 	slowest              []Line
@@ -32,7 +68,8 @@ type processor struct {
 
 	allureFormatter *report.Formatter
 
-	done int
+	prStatus string
+	prLast   time.Time
 }
 
 type packageStat struct {
@@ -43,7 +80,6 @@ type packageStat struct {
 
 func newProcessor(fl flags) *processor {
 	p := &processor{
-		counts:            map[string]int{},
 		dataRaces:         map[test]string{},
 		strippedDataRaces: map[string]string{},
 		strippedTests:     map[string][]string{},
@@ -114,15 +150,54 @@ func (p *processor) process(fn string) (err error) {
 	return p.iterate(scanner)
 }
 
-func (p *processor) progress(status string) {
-	if p.fl.Progress {
-		print(status)
+func (p *processor) status() string {
+	c := p.counts
 
-		p.done++
-		if p.done >= 80 {
-			println()
+	res := fmt.Sprintf("%d passed", c.Pass)
 
-			p.done = 0
+	if c.Fail != 0 {
+		res += fmt.Sprintf(", %d failed", c.Fail)
+	}
+
+	if c.Skip != 0 {
+		res += fmt.Sprintf(", %d skipped", c.Skip)
+	}
+
+	if c.DataRace != 0 {
+		res += fmt.Sprintf(", %d data races", c.DataRace)
+	}
+
+	if c.Flaky != 0 {
+		res += fmt.Sprintf(", %d flaky", c.Flaky)
+	}
+
+	if c.Slow != 0 {
+		res += fmt.Sprintf(", %d slow", c.Slow)
+	}
+
+	if c.PkgCached != 0 {
+		res += fmt.Sprintf(", %d cached packages", c.PkgCached)
+	}
+
+	if c.PkgCached != 0 {
+		res += fmt.Sprintf(", %d total packages", c.PkgTotal)
+	}
+
+	return res
+}
+
+func (p *processor) progress() {
+	if !p.fl.Progress {
+		return
+	}
+
+	if time.Since(p.prLast) > 5*time.Second {
+		st := p.status()
+
+		if p.prStatus != st {
+			p.prLast = time.Now()
+			p.prStatus = st
+			println(st)
 		}
 	}
 }
@@ -137,7 +212,7 @@ func (p *processor) pkgLine(l Line) {
 
 	if l.Action == "output" {
 		if strings.Contains(l.Output, "(cached)") {
-			p.counts["pkg_cached"]++
+			p.counts.PkgCached++
 
 			ps := p.packageStats[l.Package]
 			ps.Cached = true
@@ -186,7 +261,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 			continue
 		}
 
-		p.counts[l.Action]++
+		p.counts.add(l.Action)
 
 		t := test{pkg: l.Package, fn: l.Test}
 
@@ -198,11 +273,11 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 			continue
 		case "pass":
-			p.progress(".")
+			p.progress()
 			p.passed[t]++
 			delete(outputs, t)
 		case "fail":
-			p.progress("F")
+			p.progress()
 			p.failed[t]++
 			output = outputs[t]
 			delete(outputs, t)
@@ -223,7 +298,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		p.allureFormatter.Finish(report.Executor{})
 	}
 
-	p.counts["pkg_total"] = len(p.packageStats)
+	p.counts.PkgTotal = len(p.packageStats)
 
 	return nil
 }
@@ -240,7 +315,7 @@ func (p *processor) countElapsed(l Line) {
 
 	if *l.Elapsed > p.fl.Slow.Seconds() {
 		p.elapsedSlow += dur
-		p.counts["slow"]++
+		p.counts.Slow++
 
 		p.slowest = append(p.slowest, l)
 	}
