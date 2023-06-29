@@ -26,7 +26,7 @@ func (p *processor) reportFlaky() {
 	})
 
 	if len(flaky) > 0 {
-		p.counts["flaky"] = len(flaky)
+		p.counts.Flaky = len(flaky)
 
 		if p.fl.Markdown {
 			fmt.Println("### Flaky tests")
@@ -273,7 +273,7 @@ func (p *processor) report() {
 		fmt.Println("### Metrics")
 		fmt.Println()
 
-		fmt.Printf("```\n%v\n```\n\n", p.counts)
+		fmt.Printf("```\n%s\n```\n\n", p.status())
 		fmt.Println("Elapsed:", p.elapsed.String())
 		fmt.Println("Slow:", p.elapsedSlow.String())
 
@@ -284,7 +284,7 @@ func (p *processor) report() {
 		fmt.Println(p.hist.String())
 		fmt.Println("```")
 	} else {
-		fmt.Printf("Metrics: %v\n", p.counts)
+		fmt.Println("Metrics:", p.status())
 		fmt.Println("Elapsed:", p.elapsed.String())
 		fmt.Println("Slow:", p.elapsedSlow.String())
 

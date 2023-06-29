@@ -43,14 +43,14 @@ func (p *processor) updateAllure(l Line, output []string) {
 		})
 
 		switch l.Action {
-		case "pass":
+		case pass:
 			f.StepFinished("test", report.Passed, nil, func(s *report.Step) {
 				s.Stop = stop
 				s.Start = start
 				f.Res.Stop = stop
 				f.LastTime = stop
 			})
-		case "fail":
+		case fail:
 			f.StepFinished("test", report.Failed, nil, func(s *report.Step) {
 				if len(output) > 0 {
 					att, err := f.BytesAttachment([]byte(strings.Join(output, "\n")), "")
@@ -61,7 +61,7 @@ func (p *processor) updateAllure(l Line, output []string) {
 					}
 				}
 			})
-		case "skip":
+		case skip:
 			f.StepFinished("test", report.Skipped, nil, nil)
 		}
 	}
