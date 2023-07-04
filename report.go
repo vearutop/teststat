@@ -207,9 +207,9 @@ func (p *processor) reportPackages() {
 func (p *processor) reportFailed() {
 	if len(p.failures) > 0 {
 		if p.fl.Markdown {
-			fmt.Println("### Failed tests")
+			fmt.Println("### Failures")
 			fmt.Println("<details>")
-			fmt.Printf("<summary>Failed: %d</summary>\n\n", len(p.failures))
+			fmt.Printf("<summary>Failed tests (including flaky): %d</summary>\n\n", len(p.failures))
 
 			for test, output := range p.failures {
 				fmt.Println("<details>")
@@ -225,7 +225,7 @@ func (p *processor) reportFailed() {
 			fmt.Println("</details>")
 			fmt.Println()
 		} else {
-			fmt.Println("Failed tests:")
+			fmt.Println("Failures:")
 			for test, output := range p.failures {
 				fmt.Println(test)
 				fmt.Println(strings.Join(output, ""))
