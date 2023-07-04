@@ -266,32 +266,32 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		t := test{pkg: l.Package, fn: l.Test}
 
-		var output []string
+		var out []string
 
 		switch l.Action {
-		case "output":
+		case output:
 			outputs[t] = append(outputs[t], l.Output)
 
 			continue
-		case "pass":
+		case pass:
 			p.progress(false)
 			p.passed[t]++
 			delete(outputs, t)
-		case "fail":
+		case fail:
 			p.progress(false)
 			p.failed[t]++
-			output = outputs[t]
+			out = outputs[t]
 			delete(outputs, t)
 
-			if !p.checkRace(t, output) {
-				p.failures[t] = output
+			if !p.checkRace(t, out) {
+				p.failures[t] = out
 			}
-		case "skip":
+		case skip:
 			delete(outputs, t)
 		}
 
 		p.countElapsed(l)
-		p.updateAllure(l, output)
+		p.updateAllure(l, out)
 	}
 
 	// Print final progress.

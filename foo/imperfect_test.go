@@ -7,13 +7,17 @@ import (
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/suite"
 )
 
-func TestThatIsRacy(t *testing.T) {
+var allGood = rand.Int()%3 == 0 //nolint
+
+func TestThatIsRacyFoo(t *testing.T) {
 	t.Parallel()
 
 	// Sometimes passes.
-	if rand.Int()%3 == 0 { //nolint
+	if passes(3) {
 		return
 	}
 
@@ -27,35 +31,78 @@ func TestThatIsRacy(t *testing.T) {
 	a++
 }
 
-func TestThatFlakes(t *testing.T) {
+func TestThatFlakesFoo(t *testing.T) {
 	t.Parallel()
 
-	if rand.Int()%3 == 0 { //nolint
+	if passes(3) {
 		return
 	}
 
 	t.Fatal("oh, I'm so flaky")
 }
 
-func TestThatFlakesToo(t *testing.T) {
+func TestThatFlakesTooFoo(t *testing.T) {
 	t.Parallel()
 
-	if rand.Int()%5 == 0 { //nolint
+	if passes(5) {
 		return
 	}
 
 	t.Fatal("oh, I'm even more flaky")
 }
 
-func TestThatIsSometimesSlow(t *testing.T) {
+func TestThatIsSometimesSlowFoo(t *testing.T) {
 	t.Parallel()
 
-	if rand.Int()%3 == 0 { //nolint
+	if passes(3) {
 		time.Sleep(1 * time.Second)
 	}
 }
 
-func TestThatIsAlwaysSlow(t *testing.T) {
+func TestThatIsAlwaysSlowFoo(t *testing.T) {
 	t.Parallel()
 	time.Sleep(1 * time.Second)
+}
+
+func Test_Suite(t *testing.T) {
+	suite.Run(t, &TestSuite{})
+}
+
+type TestSuite struct {
+	suite.Suite
+}
+
+func (suite *TestSuite) TestThatFlakes() {
+	suite.T().Parallel()
+
+	// Sometimes passes.
+	if passes(3) {
+		return
+	}
+
+	suite.T().Fatal("oh, I'm so flaky")
+}
+
+func (suite *TestSuite) TestThatFlakesToo() {
+	suite.T().Parallel()
+
+	// Sometimes passes.
+	if passes(5) {
+		return
+	}
+
+	suite.T().Fatal("oh, I'm so flaky")
+}
+
+func passes(flakiness int) bool {
+	if allGood {
+		return true
+	}
+
+	// Sometimes passes.
+	return rand.Int()%flakiness == 0 //nolint
+}
+
+func (suite *TestSuite) TestThatPasses() {
+	time.Sleep(time.Millisecond)
 }
