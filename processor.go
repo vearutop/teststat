@@ -169,7 +169,7 @@ func (p *processor) status() string {
 	}
 
 	if c.Flaky != 0 {
-		res += fmt.Sprintf(", flaky: %d", c.Flaky)
+		res += fmt.Sprintf(", flaky tests: %d", c.Flaky)
 	}
 
 	if c.Slow != 0 {
