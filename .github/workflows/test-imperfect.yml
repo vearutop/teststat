@@ -130,15 +130,21 @@ jobs:
             ${{ steps.test.outputs.total }}
             ${{ steps.annotate.outputs.total }}
             <details><summary>Coverage of changed lines</summary>
+            
             ${{ steps.annotate.outputs.rep }}
+            
             </details>
 
             <details><summary>Coverage diff with base branch</summary>
+            
             ${{ steps.annotate.outputs.diff }}
+            
             </details>
             
             <details><summary>Test stats</summary>
+            
             ${{ steps.test.outputs.report }}
+            
             </details>
 
       - name: Store base coverage
