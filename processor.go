@@ -187,12 +187,12 @@ func (p *processor) status() string {
 	return res
 }
 
-func (p *processor) progress() {
+func (p *processor) progress(force bool) {
 	if !p.fl.Progress {
 		return
 	}
 
-	if time.Since(p.prLast) > 5*time.Second {
+	if force || time.Since(p.prLast) > 5*time.Second {
 		st := p.status()
 
 		if p.prStatus != st {
@@ -274,11 +274,11 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 			continue
 		case "pass":
-			p.progress()
+			p.progress(false)
 			p.passed[t]++
 			delete(outputs, t)
 		case "fail":
-			p.progress()
+			p.progress(false)
 			p.failed[t]++
 			output = outputs[t]
 			delete(outputs, t)
@@ -294,6 +294,9 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		p.updateAllure(l, output)
 	}
 
+	// Print final progress.
+	p.progress(true)
+
 	if p.allureFormatter != nil {
 		p.allureFormatter.Container.Stop = p.allureFormatter.Res.Stop
 		p.allureFormatter.Finish(report.Executor{})
@@ -301,7 +304,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 	p.counts.PkgTotal = len(p.packageStats)
 
-	return nil
+	return scanner.Err()
 }
 
 func (p *processor) countElapsed(l Line) {
