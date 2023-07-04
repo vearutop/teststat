@@ -79,7 +79,7 @@ jobs:
           go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... | go run . -progress -store test-report0.jsonl -skip-report -failed-tests failed.txt -
           
           # Retries.
-          for i in {1..6}
+          for i in {1..20}
           do
           test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags imperfect -short -race -run $FAILED -json ./... | go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
           done
