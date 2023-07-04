@@ -154,14 +154,14 @@ func (p *processor) process(fn string) (err error) {
 func (p *processor) status() string {
 	c := p.counts
 
-	res := fmt.Sprintf("passed: %d", c.Pass)
+	res := fmt.Sprintf("pass: %d", c.Pass)
 
 	if c.Fail != 0 {
-		res += fmt.Sprintf(", failed: %d", c.Fail)
+		res += fmt.Sprintf(", fail: %d", c.Fail)
 	}
 
 	if c.Skip != 0 {
-		res += fmt.Sprintf(", skipped: %d", c.Skip)
+		res += fmt.Sprintf(", skip: %d", c.Skip)
 	}
 
 	if c.DataRace != 0 {
@@ -169,7 +169,7 @@ func (p *processor) status() string {
 	}
 
 	if c.Flaky != 0 {
-		res += fmt.Sprintf(", flaky: %d", c.Flaky)
+		res += fmt.Sprintf(", flaky tests: %d", c.Flaky)
 	}
 
 	if c.Slow != 0 {
@@ -177,11 +177,11 @@ func (p *processor) status() string {
 	}
 
 	if c.PkgCached != 0 {
-		res += fmt.Sprintf(", cached packages: %d", c.PkgCached)
+		res += fmt.Sprintf(", cached pkg runs: %d", c.PkgCached)
 	}
 
 	if c.PkgTotal != 0 {
-		res += fmt.Sprintf(", total packages: %d", c.PkgTotal)
+		res += fmt.Sprintf(", total pkg: %d", c.PkgTotal)
 	}
 
 	return res
