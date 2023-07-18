@@ -122,5 +122,5 @@ func TestWithLongTrace(t *testing.T) {
 		recursive(depth - 1)
 	}
 
-	recursive(5000)
+	recursive(50000)
 }
