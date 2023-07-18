@@ -61,7 +61,7 @@ Go test tool offers machine-readable output with `-json` flag, `teststat` tool c
 flaky or slow tests.
 
 ```
-go test -race -json -count 5 ./... | teststat -race-depth 4 -
+go test -race -json -count 5 ./... |& teststat -race-depth 4 -
 ```
 
 Another way of using it can be by running test suite multiple times and analyze reports together.
@@ -95,11 +95,13 @@ wget -q https://github.com/vearutop/teststat/releases/latest/download/linux_amd6
 
 ```
 Usage: teststat [options] report.jsonl ...
-        Use `-` as file name to read from STDIN.
+        Use `-` or `/dev/stdin` as file name to read from STDIN.
   -allure string
         path to write allure report
   -buckets int
         number of buckets for histogram (default 10)
+  -failed-builds string
+        store build failures to a file
   -failed-tests string
         store regexp of failed tests to a file, useful for a retry run
   -markdown
@@ -178,6 +180,15 @@ Elapsed distribution (seconds):
 
 ### Read from STDIN
 
+Build errors are reported in plain text (non JSON) via STDERR, please use `|&` pipe to collect STDERR too.
+
 ```
-go test -count 5 -json -race ./... | teststat -
+go test -count 5 -json -race ./... |& teststat -
+```
+
+Pipe discards non-successful exit code by default, in such case you may want to collect failed tests and build
+failures in a file to check them later.
+
+```
+go test -count 5 -json -race ./... |& teststat -failed-tests failed.txt -failed-builds errors.txt -
 ```

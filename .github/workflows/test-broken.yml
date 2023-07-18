@@ -1,5 +1,5 @@
 # This script is provided by github.com/bool64/dev.
-name: test-imperfect
+name: test-broken
 on:
   pull_request:
 
@@ -76,12 +76,12 @@ jobs:
         continue-on-error: true
         run: |
           # First run.
-          go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... |& go run . -progress -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
+          go test -tags broken -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... |& go run . -progress -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
           
           # Retries.
           for i in {1..20}
           do
-          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags imperfect -short -race -run $FAILED -json ./... |& go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
+          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags broken -short -race -run $FAILED -json ./... |& go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
           done
 
           # Reporting.
@@ -127,9 +127,9 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          header: imperfect-test
+          header: broken-test
           message: |
-            ### Imperfect Test Coverage
+            ### Broken Test Coverage
             ${{ steps.test.outputs.total }}
             ${{ steps.annotate.outputs.total }}
             <details><summary>Coverage of changed lines</summary>
