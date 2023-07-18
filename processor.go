@@ -256,7 +256,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		if b[0] != '{' {
 			p.brokenOutputs = append(p.brokenOutputs, string(b))
-			p.counts.gadd(broken)
+			p.counts.add(broken)
 			continue
 		}
 
