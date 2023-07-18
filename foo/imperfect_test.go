@@ -106,3 +106,21 @@ func passes(flakiness int) bool {
 func (suite *TestSuite) TestThatPasses() {
 	time.Sleep(time.Millisecond)
 }
+
+func TestWithLongTrace(t *testing.T) {
+	if passes(5) {
+		return
+	}
+
+	var recursive func(depth int)
+	recursive = func(depth int) {
+		if depth == 0 {
+			var a []string
+			a[1] = "abc"
+		}
+
+		recursive(depth - 1)
+	}
+
+	recursive(5000)
+}

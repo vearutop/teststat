@@ -31,6 +31,7 @@ type flags struct {
 	Verbosity    int
 	Markdown     bool
 	SkipReport   bool
+	LimitReport  int
 	Allure       string
 	Version      bool
 }
@@ -49,6 +50,7 @@ func main() {
 	flag.IntVar(&fl.Verbosity, "verbosity", 0, "output verbosity, 0 for no output, 1 for failed test names, 2 for failure message")
 	flag.BoolVar(&fl.Markdown, "markdown", false, "render output as markdown")
 	flag.BoolVar(&fl.SkipReport, "skip-report", false, "skip reporting, useful for multiple retries")
+	flag.IntVar(&fl.LimitReport, "limit-report", 60000, "maximum report length, exceeding part is truncated")
 	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")
 
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
