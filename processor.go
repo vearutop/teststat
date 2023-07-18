@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -19,7 +18,6 @@ import (
 type counts struct {
 	DataRace  int
 	Fail      int
-	Broken    int
 	Flaky     int
 	Output    int
 	Pass      int
@@ -32,7 +30,6 @@ type counts struct {
 
 const (
 	fail   = "fail"
-	broken = "broken"
 	pass   = "pass"
 	skip   = "skip"
 	output = "output"
@@ -43,8 +40,6 @@ func (c *counts) add(key string) {
 	switch key {
 	case fail:
 		c.Fail++
-	case broken:
-		c.Broken++
 	case pass:
 		c.Pass++
 	case output:
@@ -69,7 +64,9 @@ type processor struct {
 
 	passed, failed map[test]int
 	failures       map[test][]string
-	brokenOutputs  []string
+
+	// buildFailures contain lines with malformed JSON, typically build errors from STDERR.
+	buildFailures []string
 
 	allureFormatter *report.Formatter
 
@@ -91,7 +88,6 @@ func newProcessor(fl flags) *processor {
 		passed:            map[test]int{},
 		failed:            map[test]int{},
 		failures:          map[test][]string{},
-		brokenOutputs:     []string{},
 		fl:                fl,
 		hist: &dynhist.Collector{
 			BucketsLimit: fl.HistBuckets,
@@ -164,10 +160,6 @@ func (p *processor) status() string {
 
 	if c.Fail != 0 {
 		res += fmt.Sprintf(", fail: %d", c.Fail)
-	}
-
-	if c.Broken != 0 {
-		res += fmt.Sprintf(", broken: %d", c.Broken)
 	}
 
 	if c.Skip != 0 {
@@ -250,20 +242,18 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		}
 
 		b := scanner.Bytes()
-		if len(b) == 0 {
-			continue
-		}
+		if len(b) == 0 || b[0] != '{' {
+			p.buildFailures = append(p.buildFailures, scanner.Text())
 
-		if b[0] != '{' {
-			p.brokenOutputs = append(p.brokenOutputs, string(b))
-			p.counts.add(broken)
 			continue
 		}
 
 		var l Line
 		if err := json.Unmarshal(b, &l); err != nil {
 			if !errors.Is(err, io.EOF) {
-				log.Println(err)
+				p.buildFailures = append(p.buildFailures, scanner.Text())
+
+				continue
 			}
 
 			break
