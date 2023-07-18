@@ -234,6 +234,35 @@ func (p *processor) reportFailed() {
 	}
 }
 
+func (p *processor) reportBroken() {
+	if len(p.brokenOutputs) == 0 {
+		return
+	}
+	if p.fl.Markdown {
+		fmt.Println("### Broken")
+		fmt.Println("<details>")
+		fmt.Printf("<summary>Broken tests : %d</summary>\n\n", len(p.brokenOutputs))
+
+		for _, output := range p.brokenOutputs {
+			fmt.Println("<details>")
+
+			fmt.Println("```")
+			fmt.Println(output)
+			fmt.Println("```")
+
+			fmt.Println("</details>")
+		}
+
+		fmt.Println("</details>")
+		fmt.Println()
+	} else {
+		fmt.Println("Broken:")
+		for _, output := range p.brokenOutputs {
+			fmt.Println(output)
+		}
+	}
+}
+
 func (p *processor) storeFailed() {
 	if p.fl.FailedTests == "" || len(p.failed) == 0 {
 		return
@@ -252,12 +281,24 @@ func (p *processor) storeFailed() {
 	}
 }
 
+func (p *processor) storeBroken() {
+	if p.fl.BrokenTests == "" || len(p.brokenOutputs) == 0 {
+		return
+	}
+
+	err := os.WriteFile(p.fl.BrokenTests, []byte(strings.Join(p.brokenOutputs, "\n")), 0o600)
+	if err != nil {
+		fmt.Println("failed to store broken tests outputs: " + err.Error())
+	}
+}
+
 func (p *processor) report() {
 	if p.prStatus != "" {
 		fmt.Println()
 	}
 
 	p.storeFailed()
+	p.storeBroken()
 
 	if p.fl.SkipReport {
 		return
@@ -268,6 +309,7 @@ func (p *processor) report() {
 	p.reportRaces()
 	p.reportPackages()
 	p.reportFailed()
+	p.reportBroken()
 
 	if p.fl.Markdown {
 		fmt.Println("### Metrics")
