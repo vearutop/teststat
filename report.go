@@ -29,27 +29,27 @@ func (p *processor) reportFlaky() {
 		p.counts.Flaky = len(flaky)
 
 		if p.fl.Markdown {
-			fmt.Println("### Flaky tests")
-			fmt.Println("<details>")
-			fmt.Printf("<summary>Tests: %d</summary>\n\n", len(flaky))
+			p.println("### Flaky tests")
+			p.println("<details>")
+			p.printf("<summary>Tests: %d</summary>\n\n", len(flaky))
 
-			fmt.Println("| Pass | Fail | Test |")
-			fmt.Println("| - | - | - |")
+			p.println("| Pass | Fail | Test |")
+			p.println("| - | - | - |")
 
 			for _, ft := range flaky {
-				fmt.Printf("| %d | %d | %s |\n", ft.passed, ft.failed, ft.test)
+				p.printf("| %d | %d | %s |\n", ft.passed, ft.failed, ft.test)
 			}
 
-			fmt.Println("</details>")
+			p.println("</details>")
 		} else {
-			fmt.Println("Flaky tests:")
+			p.println("Flaky tests:")
 
 			for _, ft := range flaky {
-				fmt.Printf("%s: %d passed, %d failed\n", ft.test, ft.passed, ft.failed)
+				p.printf("%s: %d passed, %d failed\n", ft.test, ft.passed, ft.failed)
 			}
 		}
 
-		fmt.Println()
+		p.println()
 	}
 }
 
@@ -60,12 +60,12 @@ func (p *processor) reportSlowest() {
 
 	if len(p.slowest) > 0 {
 		if p.fl.Markdown {
-			fmt.Println("### Slow tests")
-			fmt.Println("<details>")
-			fmt.Printf("<summary>Total slow runs: %d</summary>\n\n", len(p.slowest))
+			p.println("### Slow tests")
+			p.println("<details>")
+			p.printf("<summary>Total slow runs: %d</summary>\n\n", len(p.slowest))
 
-			fmt.Println("| Result | Duration | Package | Test |")
-			fmt.Println("| - | - | - | - |")
+			p.println("| Result | Duration | Package | Test |")
+			p.println("| - | - | - | - |")
 
 			for i, l := range p.slowest {
 				if i >= p.fl.Slowest {
@@ -73,12 +73,12 @@ func (p *processor) reportSlowest() {
 				}
 
 				dur := time.Duration(*l.Elapsed * float64(time.Second))
-				fmt.Printf("| %s | %s | %s | %s |\n", l.Action, dur.String(), l.Package, l.Test)
+				p.printf("| %s | %s | %s | %s |\n", l.Action, dur.String(), l.Package, l.Test)
 			}
 
-			fmt.Println("</details>")
+			p.println("</details>")
 		} else {
-			fmt.Println("Slowest tests:")
+			p.println("Slowest tests:")
 
 			for i, l := range p.slowest {
 				if i >= p.fl.Slowest {
@@ -86,11 +86,11 @@ func (p *processor) reportSlowest() {
 				}
 
 				dur := time.Duration(*l.Elapsed * float64(time.Second))
-				fmt.Printf("%s %s %s %s\n", l.Action, l.Package, l.Test, dur.String())
+				p.printf("%s %s %s %s\n", l.Action, l.Package, l.Test, dur.String())
 			}
 		}
 
-		fmt.Println()
+		p.println()
 	}
 }
 
@@ -108,9 +108,9 @@ func (p *processor) reportRaces() {
 	sort.Strings(keys)
 
 	if p.fl.Markdown {
-		fmt.Println("### Data races")
-		fmt.Println("<details>")
-		fmt.Printf("<summary>Total data races: %d, unique: %d</summary>\n\n",
+		p.println("### Data races")
+		p.println("<details>")
+		p.printf("<summary>Total data races: %d, unique: %d</summary>\n\n",
 			len(p.dataRaces), len(p.strippedDataRaces))
 
 		for _, k := range keys {
@@ -119,31 +119,31 @@ func (p *processor) reportRaces() {
 
 			t = uniq(t)
 
-			fmt.Println("<details>")
-			fmt.Printf("<summary><code>%s</code></summary>\n\n", t[0])
+			p.println("<details>")
+			p.printf("<summary><code>%s</code></summary>\n\n", t[0])
 
 			if len(t) > 1 {
-				fmt.Println("Other affected tests:")
-				fmt.Println("```")
+				p.println("Other affected tests:")
+				p.println("```")
 
 				for _, tt := range t[1:] {
-					fmt.Println(tt)
+					p.println(tt)
 				}
 
-				fmt.Println("```")
+				p.println("```")
 			}
 
-			fmt.Println("\n```")
-			fmt.Println(r)
-			fmt.Println("```")
-			fmt.Println("</details>")
-			fmt.Println()
+			p.println("\n```")
+			p.println(r)
+			p.println("```")
+			p.println("</details>")
+			p.println()
 		}
 
-		fmt.Println("</details>")
-		fmt.Println()
+		p.println("</details>")
+		p.println()
 	} else {
-		fmt.Println("Data races:")
+		p.println("Data races:")
 
 		for _, k := range keys {
 			t := p.strippedTests[k]
@@ -152,11 +152,11 @@ func (p *processor) reportRaces() {
 				t = append(t[0:3], "...")
 			}
 
-			fmt.Println(strings.Join(t, ", "))
-			fmt.Println(shortedDataRace(p.strippedDataRaces[k]))
+			p.println(strings.Join(t, ", "))
+			p.println(shortedDataRace(p.strippedDataRaces[k]))
 		}
 
-		fmt.Println()
+		p.println()
 	}
 }
 
@@ -178,12 +178,12 @@ func (p *processor) reportPackages() {
 		})
 
 		if p.fl.Markdown {
-			fmt.Println("### Slowest test packages")
-			fmt.Println("<details>")
-			fmt.Printf("<summary>Total packages with tests: %d</summary>\n\n", len(p.packageStats))
+			p.println("### Slowest test packages")
+			p.println("<details>")
+			p.printf("<summary>Total packages with tests: %d</summary>\n\n", len(p.packageStats))
 
-			fmt.Println("| Duration | Package |")
-			fmt.Println("| - | - |")
+			p.println("| Duration | Package |")
+			p.println("| - | - |")
 
 			for i, ps := range pstats {
 				dur := time.Duration(ps.Elapsed * float64(time.Second)).String()
@@ -191,15 +191,15 @@ func (p *processor) reportPackages() {
 					dur += " (cached)"
 				}
 
-				fmt.Printf("| %s | %s |\n", dur, ps.Package)
+				p.printf("| %s | %s |\n", dur, ps.Package)
 
 				if i > p.fl.Slowest {
 					break
 				}
 			}
 
-			fmt.Println("</details>")
-			fmt.Println()
+			p.println("</details>")
+			p.println()
 		}
 	}
 }
@@ -210,52 +210,52 @@ func (p *processor) reportFailed() {
 	}
 
 	if p.fl.Markdown {
-		fmt.Println("### Failures")
+		p.println("### Failures")
 
 		if len(p.buildFailures) > 0 {
-			fmt.Println("<details>")
-			fmt.Printf("<summary>Failed builds</summary>\n\n")
-			fmt.Println("```")
+			p.println("<details>")
+			p.printf("<summary>Failed builds</summary>\n\n")
+			p.println("```")
 
 			for _, output := range p.buildFailures {
-				fmt.Println(output)
+				p.println(output)
 			}
 
-			fmt.Println("```\n\n</details>")
-			fmt.Println()
+			p.println("```\n\n</details>")
+			p.println()
 		}
 
 		if len(p.failures) > 0 {
-			fmt.Println("<details>")
-			fmt.Printf("<summary>Failed tests (including flaky): %d</summary>\n\n", len(p.failures))
+			p.println("<details>")
+			p.printf("<summary>Failed tests (including flaky): %d</summary>\n\n", len(p.failures))
 
 			for test, output := range p.failures {
-				fmt.Println("<details>")
-				fmt.Printf("<summary><code>%s</code></summary>\n\n", test)
+				p.println("<details>")
+				p.printf("<summary><code>%s</code></summary>\n\n", test)
 
-				fmt.Println("```")
-				fmt.Println(strings.Join(output, ""))
-				fmt.Println("```")
+				p.println("```")
+				p.println(strings.Join(output, ""))
+				p.println("```")
 
-				fmt.Println("</details>")
+				p.println("</details>")
 			}
 
-			fmt.Println("</details>")
-			fmt.Println()
+			p.println("</details>")
+			p.println()
 		}
 	} else {
 		if len(p.buildFailures) > 0 {
-			fmt.Println("Failed builds:")
+			p.println("Failed builds:")
 			for _, output := range p.buildFailures {
-				fmt.Println(output)
+				p.println(output)
 			}
 		}
 
 		if len(p.failures) > 0 {
-			fmt.Println("Failed tests (including flaky):")
+			p.println("Failed tests (including flaky):")
 			for test, output := range p.failures {
-				fmt.Println(test)
-				fmt.Println(strings.Join(output, ""))
+				p.println(test)
+				p.println(strings.Join(output, ""))
 			}
 		}
 	}
@@ -275,7 +275,7 @@ func (p *processor) storeFailed() {
 	failedRegex = failedRegex[0 : len(failedRegex)-1]
 
 	if err := os.WriteFile(p.fl.FailedTests, []byte(failedRegex), 0o600); err != nil {
-		fmt.Println("failed to store failed tests regexp: " + err.Error())
+		p.println("failed to store failed tests regexp: " + err.Error())
 	}
 }
 
@@ -285,13 +285,33 @@ func (p *processor) storeBuildFailures() {
 	}
 
 	if err := os.WriteFile(p.fl.FailedBuilds, []byte(strings.Join(p.buildFailures, "")), 0o600); err != nil {
-		fmt.Println("failed to store build failed: " + err.Error())
+		p.println("failed to store build failed: " + err.Error())
+	}
+}
+
+func (p *processor) println(a ...interface{}) {
+	if p.repLimitHit {
+		return
+	}
+
+	if _, err := fmt.Fprintln(p.rep, a...); err != nil {
+		panic(err.Error())
+	}
+}
+
+func (p *processor) printf(format string, a ...interface{}) {
+	if p.repLimitHit {
+		return
+	}
+
+	if _, err := fmt.Fprintf(p.rep, format, a...); err != nil {
+		panic(err.Error())
 	}
 }
 
 func (p *processor) report() {
 	if p.prStatus != "" {
-		fmt.Println()
+		p.println()
 	}
 
 	p.storeFailed()
@@ -301,36 +321,36 @@ func (p *processor) report() {
 		return
 	}
 
+	if p.fl.Markdown {
+		p.println("### Metrics")
+		p.println()
+
+		p.printf("```\n%s\n```\n\n", p.status())
+		p.println("Elapsed:", p.elapsed.String())
+		p.println("Slow:", p.elapsedSlow.String())
+
+		p.println()
+
+		p.println("### Test time distribution (seconds)")
+		p.println("```")
+		p.println(p.hist.String())
+		p.println("```")
+	} else {
+		p.println("Total", p.status())
+		p.println("Elapsed:", p.elapsed.String())
+		p.println("Slow:", p.elapsedSlow.String())
+
+		p.println()
+
+		p.println("Test time distribution (seconds):")
+		p.println(p.hist.String())
+	}
+
 	p.reportFlaky()
 	p.reportSlowest()
 	p.reportRaces()
 	p.reportPackages()
 	p.reportFailed()
-
-	if p.fl.Markdown {
-		fmt.Println("### Metrics")
-		fmt.Println()
-
-		fmt.Printf("```\n%s\n```\n\n", p.status())
-		fmt.Println("Elapsed:", p.elapsed.String())
-		fmt.Println("Slow:", p.elapsedSlow.String())
-
-		fmt.Println()
-
-		fmt.Println("### Test time distribution (seconds)")
-		fmt.Println("```")
-		fmt.Println(p.hist.String())
-		fmt.Println("```")
-	} else {
-		fmt.Println("Total", p.status())
-		fmt.Println("Elapsed:", p.elapsed.String())
-		fmt.Println("Slow:", p.elapsedSlow.String())
-
-		fmt.Println()
-
-		fmt.Println("Test time distribution (seconds):")
-		fmt.Println(p.hist.String())
-	}
 }
 
 func uniq(a []string) []string {

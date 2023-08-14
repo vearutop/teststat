@@ -106,6 +106,8 @@ Usage: teststat [options] report.jsonl ...
         store regexp of failed tests to a file, useful for a retry run
   -markdown
         render output as markdown
+  -limit-report int
+        maximum report length, exceeding part is truncated
   -progress
         show progress
   -race-depth int
@@ -122,7 +124,6 @@ Usage: teststat [options] report.jsonl ...
         output verbosity, 0 for no output, 1 for failed test names, 2 for failure message
   -version
         show version and exit
-
 ```
 
 ## Examples

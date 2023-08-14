@@ -73,12 +73,41 @@ type processor struct {
 
 	prStatus string
 	prLast   time.Time
+
+	rep         io.Writer
+	repLimitHit bool
 }
 
 type packageStat struct {
 	Package string
 	Elapsed float64
 	Cached  bool
+}
+
+type limitingWriter struct {
+	w        io.Writer
+	lim      int
+	written  int
+	limitHit *bool
+}
+
+func (l *limitingWriter) Write(p []byte) (n int, err error) {
+	if *l.limitHit {
+		return len(p), nil
+	}
+
+	l.written += len(p)
+
+	if l.written > l.lim {
+		*l.limitHit = true
+
+		_, err := l.w.Write([]byte("...truncated"))
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return l.w.Write(p)
 }
 
 func newProcessor(fl flags) *processor {
@@ -97,6 +126,7 @@ func newProcessor(fl flags) *processor {
 		},
 		packageStats: map[string]packageStat{},
 		prLast:       time.Now(),
+		rep:          os.Stdout,
 	}
 
 	if fl.Allure != "" {
@@ -112,6 +142,14 @@ func newProcessor(fl flags) *processor {
 				Start: report.GetTimestampMs(),
 				Name:  name,
 			},
+		}
+	}
+
+	if fl.LimitReport > 0 {
+		p.rep = &limitingWriter{
+			w:        os.Stdout,
+			lim:      fl.LimitReport,
+			limitHit: &p.repLimitHit,
 		}
 	}
 
