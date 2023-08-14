@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -243,6 +244,11 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		b := scanner.Bytes()
 		if len(b) == 0 || b[0] != '{' {
+			if bytes.HasPrefix(b, []byte("go: downloading")) || bytes.HasPrefix(b, []byte("go test")) ||
+				bytes.HasPrefix(b, []byte("make:")) {
+				continue
+			}
+
 			p.buildFailures = append(p.buildFailures, scanner.Text())
 
 			continue
