@@ -266,15 +266,35 @@ func (p *processor) storeFailed() {
 		return
 	}
 
-	failedRegex := ""
+	failedRegex := map[string]bool{}
 
 	for t := range p.failed {
-		failedRegex += "^" + t.fn + "$|"
+		failedRegex["^"+t.fn+"$"] = true
 	}
 
-	failedRegex = failedRegex[0 : len(failedRegex)-1]
+	if p.fl.SkipParent {
+		for k := range failedRegex {
+			for {
+				p := strings.LastIndex(k, "/")
+				if p == -1 {
+					break
+				}
 
-	if err := os.WriteFile(p.fl.FailedTests, []byte(failedRegex), 0o600); err != nil {
+				k = k[0:p] + "$"
+				delete(failedRegex, k)
+			}
+		}
+	}
+
+	fr := make([]string, 0, len(failedRegex))
+
+	for k := range failedRegex {
+		fr = append(fr, k)
+	}
+
+	sort.Strings(fr)
+
+	if err := os.WriteFile(p.fl.FailedTests, []byte(strings.Join(fr, "|")), 0o600); err != nil {
 		p.println("failed to store failed tests regexp: " + err.Error())
 	}
 }

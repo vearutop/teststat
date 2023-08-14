@@ -104,14 +104,16 @@ Usage: teststat [options] report.jsonl ...
         store build failures to a file
   -failed-tests string
         store regexp of failed tests to a file, useful for a retry run
+  -limit-report int
+        maximum report length, exceeding part is truncated (default 60000)
   -markdown
         render output as markdown
-  -limit-report int
-        maximum report length, exceeding part is truncated
   -progress
         show progress
   -race-depth int
         stacktrace depth to group similar data races (default 5)
+  -skip-parent
+        exclude parent tests of subtests in regexp of failed tests, this may help to avoid running full suite on single failure
   -skip-report
         skip reporting, useful for multiple retries
   -slow duration

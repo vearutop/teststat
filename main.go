@@ -26,6 +26,7 @@ type flags struct {
 	Slowest      int
 	Store        string
 	FailedTests  string
+	SkipParent   bool
 	FailedBuilds string
 	Progress     bool
 	Verbosity    int
@@ -45,6 +46,7 @@ func main() {
 	flag.IntVar(&fl.Slowest, "slowest", 30, "limit number of slowest tests to list")
 	flag.StringVar(&fl.Store, "store", "", "store received json lines to file, useful for STDIN")
 	flag.StringVar(&fl.FailedTests, "failed-tests", "", "store regexp of failed tests to a file, useful for a retry run")
+	flag.BoolVar(&fl.SkipParent, "skip-parent", false, "exclude parent tests of subtests in regexp of failed tests, this may help to avoid running full suite on single failure")
 	flag.StringVar(&fl.FailedBuilds, "failed-builds", "", "store build failures to a file")
 	flag.BoolVar(&fl.Progress, "progress", false, "show progress")
 	flag.IntVar(&fl.Verbosity, "verbosity", 0, "output verbosity, 0 for no output, 1 for failed test names, 2 for failure message")
