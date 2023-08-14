@@ -286,7 +286,8 @@ func (p *processor) storeFailed() {
 		}
 	}
 
-	var fr []string
+	fr := make([]string, 0, len(failedRegex))
+
 	for k := range failedRegex {
 		fr = append(fr, k)
 	}
