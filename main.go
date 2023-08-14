@@ -28,6 +28,7 @@ type flags struct {
 	FailedTests  string
 	FailedBuilds string
 	Progress     bool
+	Verbosity    int
 	Markdown     bool
 	SkipReport   bool
 	Allure       string
@@ -45,6 +46,7 @@ func main() {
 	flag.StringVar(&fl.FailedTests, "failed-tests", "", "store regexp of failed tests to a file, useful for a retry run")
 	flag.StringVar(&fl.FailedBuilds, "failed-builds", "", "store build failures to a file")
 	flag.BoolVar(&fl.Progress, "progress", false, "show progress")
+	flag.IntVar(&fl.Verbosity, "verbosity", 0, "output verbosity, 0 for no output, 1 for failed test names, 2 for failure message")
 	flag.BoolVar(&fl.Markdown, "markdown", false, "render output as markdown")
 	flag.BoolVar(&fl.SkipReport, "skip-report", false, "skip reporting, useful for multiple retries")
 	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")

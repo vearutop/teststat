@@ -287,6 +287,14 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 			out = outputs[t]
 			delete(outputs, t)
 
+			if p.fl.Verbosity > 0 {
+				println("FAIL:", t.String())
+			}
+
+			if p.fl.Verbosity > 1 {
+				println(strings.Join(out, "\n"))
+			}
+
 			if !p.checkRace(t, out) {
 				p.failures[t] = out
 			}
@@ -309,6 +317,10 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 	p.counts.PkgTotal = len(p.packageStats)
 
 	return scanner.Err()
+}
+
+func (p *processor) action() {
+
 }
 
 func (p *processor) countElapsed(l Line) {

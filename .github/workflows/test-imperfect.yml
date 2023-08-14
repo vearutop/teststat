@@ -76,7 +76,7 @@ jobs:
         continue-on-error: true
         run: |
           # First run.
-          go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... |& go run . -progress -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
+          go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... |& go run . -progress -verbosity 2 -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
           
           # Retries.
           for i in {1..20}
