@@ -108,9 +108,9 @@ func (suite *TestSuite) TestThatPasses() {
 }
 
 func TestWithLongTrace(t *testing.T) {
-	//if passes(15) {
-	//	return
-	//}
+	if passes(5) {
+		return
+	}
 
 	var recursive func(depth int)
 	recursive = func(depth int) {
