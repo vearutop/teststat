@@ -319,7 +319,7 @@ func (p *processor) action(l Line, outputs map[test][]string, t test) (out []str
 		}
 
 		if p.fl.Verbosity > 1 {
-			println(strings.Join(out, "\n"))
+			println(strings.Join(out, ""))
 		}
 
 		if !p.checkRace(t, out) {
