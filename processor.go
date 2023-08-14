@@ -270,36 +270,9 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		t := test{pkg: l.Package, fn: l.Test}
 
-		var out []string
-
-		switch l.Action {
-		case output:
-			outputs[t] = append(outputs[t], l.Output)
-
+		out, skipLine := p.action(l, outputs, t)
+		if skipLine {
 			continue
-		case pass:
-			p.progress(false)
-			p.passed[t]++
-			delete(outputs, t)
-		case fail:
-			p.progress(false)
-			p.failed[t]++
-			out = outputs[t]
-			delete(outputs, t)
-
-			if p.fl.Verbosity > 0 {
-				println("FAIL:", t.String())
-			}
-
-			if p.fl.Verbosity > 1 {
-				println(strings.Join(out, "\n"))
-			}
-
-			if !p.checkRace(t, out) {
-				p.failures[t] = out
-			}
-		case skip:
-			delete(outputs, t)
 		}
 
 		p.countElapsed(l)
@@ -319,8 +292,38 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 	return scanner.Err()
 }
 
-func (p *processor) action() {
+func (p *processor) action(l Line, outputs map[test][]string, t test) (out []string, skipLine bool) {
+	switch l.Action {
+	case output:
+		outputs[t] = append(outputs[t], l.Output)
 
+		return nil, true
+	case pass:
+		p.progress(false)
+		p.passed[t]++
+		delete(outputs, t)
+	case fail:
+		p.progress(false)
+		p.failed[t]++
+		out = outputs[t]
+		delete(outputs, t)
+
+		if p.fl.Verbosity > 0 {
+			println("FAIL:", t.String())
+		}
+
+		if p.fl.Verbosity > 1 {
+			println(strings.Join(out, "\n"))
+		}
+
+		if !p.checkRace(t, out) {
+			p.failures[t] = out
+		}
+	case skip:
+		delete(outputs, t)
+	}
+
+	return out, false
 }
 
 func (p *processor) countElapsed(l Line) {

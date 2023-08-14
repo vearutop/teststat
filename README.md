@@ -118,6 +118,8 @@ Usage: teststat [options] report.jsonl ...
         limit number of slowest tests to list (default 30)
   -store string
         store received json lines to file, useful for STDIN
+  -verbosity int
+        output verbosity, 0 for no output, 1 for failed test names, 2 for failure message
   -version
         show version and exit
 
