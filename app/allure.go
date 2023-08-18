@@ -1,5 +1,5 @@
 // Package main provides teststat utility.
-package main
+package app
 
 import (
 	"log"

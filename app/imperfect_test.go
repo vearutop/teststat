@@ -1,7 +1,7 @@
 //go:build imperfect
 // +build imperfect
 
-package main_test
+package app_test
 
 import (
 	"math/rand"
