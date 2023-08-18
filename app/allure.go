@@ -1,4 +1,4 @@
-// Package main provides teststat utility.
+// Package app provides teststat utility.
 package app
 
 import (

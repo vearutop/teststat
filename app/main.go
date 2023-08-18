@@ -37,6 +37,7 @@ type flags struct {
 	Version      bool
 }
 
+// Main is an app entry point.
 func Main() {
 	fl := flags{}
 
