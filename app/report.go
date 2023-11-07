@@ -229,9 +229,21 @@ func (p *processor) reportFailed() {
 			p.println("<details>")
 			p.printf("<summary>Failed tests (including flaky): %d</summary>\n\n", len(p.failures))
 
-			for test, output := range p.failures {
+			var failures []test
+
+			for t := range p.failures {
+				failures = append(failures, t)
+			}
+
+			sort.Slice(failures, func(i, j int) bool {
+				return failures[i].String() < failures[j].String()
+			})
+
+			for _, t := range failures {
+				output := p.failures[t]
+
 				p.println("<details>")
-				p.printf("<summary><code>%s</code></summary>\n\n", test)
+				p.printf("<summary><code>%s</code></summary>\n\n", t)
 
 				p.println("```")
 				p.println(strings.Join(output, ""))
@@ -299,6 +311,10 @@ func (p *processor) storeFailureStats() {
 		if flaky > 0 {
 			rep += fmt.Sprintf(", %d flaky test(s)", flaky)
 		}
+	}
+
+	if len(p.dataRaces) > 0 {
+		rep += fmt.Sprintf(", %d data race(s)", len(p.dataRaces))
 	}
 
 	if rep == "" {
