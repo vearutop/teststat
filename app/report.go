@@ -261,29 +261,50 @@ func (p *processor) reportFailed() {
 	}
 }
 
-func (p *processor) storeFailed() {
-	if p.fl.FailureStats != "" {
-		rep := ""
+func (p *processor) storeFailureStats() {
+	if p.fl.FailureStats == "" {
+		return
+	}
 
-		if len(p.buildFailures) > 0 {
-			rep += fmt.Sprintf(", %d failed builds", len(p.buildFailures))
+	rep := ""
+
+	if len(p.buildFailures) > 0 {
+		rep += fmt.Sprintf(", %d failed builds", len(p.buildFailures))
+	}
+
+	if len(p.failures) > 0 {
+		flaky := 0
+		failed := 0
+
+		for t := range p.failures {
+			if p.passed[t] > 0 {
+				flaky++
+			} else {
+				failed++
+			}
 		}
 
-		if len(p.failures) > 0 {
-			rep += fmt.Sprintf(", %d failed tests (including flaky)", len(p.failures))
+		if failed > 0 {
+			rep += fmt.Sprintf(", %d failed tests", failed)
 		}
 
-		if rep == "" {
-			rep = "no failures"
-		} else {
-			rep = rep[2:]
-		}
-
-		if err := os.WriteFile(p.fl.FailureStats, []byte(rep+"\n"), 0o600); err != nil {
-			p.println("failed to store failure stats: " + err.Error())
+		if flaky > 0 {
+			rep += fmt.Sprintf(", %d flaky tests", flaky)
 		}
 	}
 
+	if rep == "" {
+		rep = "no failures"
+	} else {
+		rep = rep[2:]
+	}
+
+	if err := os.WriteFile(p.fl.FailureStats, []byte(rep+"\n"), 0o600); err != nil {
+		p.println("failed to store failure stats: " + err.Error())
+	}
+}
+
+func (p *processor) storeFailed() {
 	if p.fl.FailedTests == "" || len(p.failed) == 0 {
 		return
 	}
@@ -357,6 +378,7 @@ func (p *processor) report() {
 	}
 
 	p.storeFailed()
+	p.storeFailureStats()
 	p.storeBuildFailures()
 
 	if p.fl.SkipReport {
