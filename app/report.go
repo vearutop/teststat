@@ -372,11 +372,31 @@ func (p *processor) printf(format string, a ...interface{}) {
 	}
 }
 
+func (p *processor) filterUniqBuildFailures() {
+	if len(p.buildFailures) == 0 {
+		return
+	}
+
+	u := map[string]bool{}
+
+	var res []string
+
+	for _, l := range p.buildFailures {
+		if !u[l] {
+			res = append(res, l)
+			u[l] = true
+		}
+	}
+
+	p.buildFailures = res
+}
+
 func (p *processor) report() {
 	if p.prStatus != "" {
 		p.println()
 	}
 
+	p.filterUniqBuildFailures()
 	p.storeFailed()
 	p.storeFailureStats()
 	p.storeBuildFailures()
