@@ -277,7 +277,7 @@ func (p *processor) storeFailureStats() {
 			}
 		}
 
-		rep += fmt.Sprintf(", %d packages failed build", failed)
+		rep += fmt.Sprintf(", %d package(s) failed build", failed)
 	}
 
 	if len(p.failures) > 0 {
@@ -293,11 +293,11 @@ func (p *processor) storeFailureStats() {
 		}
 
 		if failed > 0 {
-			rep += fmt.Sprintf(", %d failed tests", failed)
+			rep += fmt.Sprintf(", %d failed test(s)", failed)
 		}
 
 		if flaky > 0 {
-			rep += fmt.Sprintf(", %d flaky tests", flaky)
+			rep += fmt.Sprintf(", %d flaky test(s)", flaky)
 		}
 	}
 
