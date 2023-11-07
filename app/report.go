@@ -279,7 +279,7 @@ func (p *processor) storeFailed() {
 			rep = rep[2:]
 		}
 
-		if err := os.WriteFile(p.fl.FailureStats, []byte(rep), 0o600); err != nil {
+		if err := os.WriteFile(p.fl.FailureStats, []byte(rep+"\n"), 0o600); err != nil {
 			p.println("failed to store failure stats: " + err.Error())
 		}
 	}
