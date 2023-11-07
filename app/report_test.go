@@ -1,9 +1,14 @@
 package app
 
 import (
+	"bytes"
+	"log"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestUniq(t *testing.T) {
@@ -190,4 +195,31 @@ Goroutine 13 (running) created at:
 ==================
 ...... other data race(s) truncated
 `, s)
+}
+
+func TestTest_String(t *testing.T) {
+	var fl flags
+
+	fl.FailureStats = "testdata/failure-stats.txt"
+	fl.Markdown = true
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	for _, f := range []string{"testdata/test-report0.jsonl", "testdata/test-report1.jsonl", "testdata/test-report2.jsonl"} {
+		if err := p.process(f); err != nil {
+			log.Fatalf("%s: %s", f, err)
+		}
+	}
+
+	p.report()
+
+	expected, err := os.ReadFile("testdata/imperfect.md")
+	require.NoError(t, err)
+	assert.Equal(t, string(expected), buf.String())
+
+	stats, err := os.ReadFile("testdata/failure-stats.txt")
+	require.NoError(t, err)
+	assert.Equal(t, `1 failed test(s), 3 flaky test(s), 2 data race(s)`, strings.TrimSpace(string(stats)))
 }

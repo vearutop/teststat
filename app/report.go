@@ -229,9 +229,21 @@ func (p *processor) reportFailed() {
 			p.println("<details>")
 			p.printf("<summary>Failed tests (including flaky): %d</summary>\n\n", len(p.failures))
 
-			for test, output := range p.failures {
+			var failures []test
+
+			for t := range p.failures {
+				failures = append(failures, t)
+			}
+
+			sort.Slice(failures, func(i, j int) bool {
+				return failures[i].String() < failures[j].String()
+			})
+
+			for _, t := range failures {
+				output := p.failures[t]
+
 				p.println("<details>")
-				p.printf("<summary><code>%s</code></summary>\n\n", test)
+				p.printf("<summary><code>%s</code></summary>\n\n", t)
 
 				p.println("```")
 				p.println(strings.Join(output, ""))
@@ -258,6 +270,61 @@ func (p *processor) reportFailed() {
 				p.println(strings.Join(output, ""))
 			}
 		}
+	}
+}
+
+func (p *processor) storeFailureStats() {
+	if p.fl.FailureStats == "" {
+		return
+	}
+
+	rep := ""
+
+	if len(p.buildFailures) > 0 {
+		failed := 0
+
+		for _, l := range p.buildFailures {
+			if strings.Contains(l, "[build failed]") {
+				failed++
+			}
+		}
+
+		rep += fmt.Sprintf(", %d package(s) failed build", failed)
+	}
+
+	if len(p.failures) > 0 {
+		flaky := 0
+		failed := 0
+
+		for t := range p.failures {
+			if p.passed[t] > 0 {
+				flaky++
+			} else {
+				failed++
+			}
+		}
+
+		if failed > 0 {
+			rep += fmt.Sprintf(", %d failed test(s)", failed)
+		}
+
+		if flaky > 0 {
+			rep += fmt.Sprintf(", %d flaky test(s)", flaky)
+		}
+	}
+
+	if len(p.dataRaces) > 0 {
+		rep += fmt.Sprintf(", %d data race(s)", len(p.dataRaces))
+	}
+
+	if rep == "" {
+		rep = "no failures"
+	} else {
+		rep = rep[2:]
+	}
+
+	if err := os.WriteFile(p.fl.FailureStats, []byte(rep+"\n"), 0o600); err != nil {
+		p.println("failed to store failure stats: " + err.Error())
 	}
 }
 
@@ -329,17 +396,40 @@ func (p *processor) printf(format string, a ...interface{}) {
 	}
 }
 
+func (p *processor) filterUniqBuildFailures() {
+	if len(p.buildFailures) == 0 {
+		return
+	}
+
+	u := map[string]bool{}
+
+	var res []string
+
+	for _, l := range p.buildFailures {
+		if !u[l] {
+			res = append(res, l)
+			u[l] = true
+		}
+	}
+
+	p.buildFailures = res
+}
+
 func (p *processor) report() {
 	if p.prStatus != "" {
 		p.println()
 	}
 
+	p.filterUniqBuildFailures()
 	p.storeFailed()
+	p.storeFailureStats()
 	p.storeBuildFailures()
 
 	if p.fl.SkipReport {
 		return
 	}
+
+	p.reportFailed()
 
 	if p.fl.Markdown {
 		p.println("### Metrics")
@@ -370,7 +460,6 @@ func (p *processor) report() {
 	p.reportSlowest()
 	p.reportRaces()
 	p.reportPackages()
-	p.reportFailed()
 }
 
 func uniq(a []string) []string {

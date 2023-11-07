@@ -3,9 +3,9 @@ module github.com/vearutop/teststat
 go 1.17
 
 require (
-	github.com/bool64/dev v0.2.31
+	github.com/bool64/dev v0.2.32
 	github.com/godogx/allure v0.2.3
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.4.0
 	github.com/stretchr/testify v1.8.4
 	github.com/vearutop/dynhist-go v1.2.2
 )
