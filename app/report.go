@@ -269,7 +269,15 @@ func (p *processor) storeFailureStats() {
 	rep := ""
 
 	if len(p.buildFailures) > 0 {
-		rep += fmt.Sprintf(", %d failed builds", len(p.buildFailures))
+		failed := 0
+
+		for _, l := range p.buildFailures {
+			if strings.Contains(l, "[build failed]") {
+				failed++
+			}
+		}
+
+		rep += fmt.Sprintf(", %d packages failed build", failed)
 	}
 
 	if len(p.failures) > 0 {
