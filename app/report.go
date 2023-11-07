@@ -270,7 +270,7 @@ func (p *processor) storeFailed() {
 		}
 
 		if len(p.failures) > 0 {
-			rep += fmt.Sprintf(", %d failed tests (including flaky)", len(p.buildFailures))
+			rep += fmt.Sprintf(", %d failed tests (including flaky)", len(p.failures))
 		}
 
 		if rep == "" {

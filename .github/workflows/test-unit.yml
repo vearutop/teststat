@@ -91,7 +91,6 @@ jobs:
           # Reporting.
           REPORT=$(go run . -failure-stats failure-stats.txt -markdown test-report*.jsonl)
           echo "${REPORT}"
-          cat failure-stats.txt
           
           test ! -f failed.txt || echo "Tests failed after retries: $(cat failed.txt)" 1>&2
           test ! -f failed.txt || (echo "failed=true" >> $GITHUB_OUTPUT)
