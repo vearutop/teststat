@@ -262,6 +262,28 @@ func (p *processor) reportFailed() {
 }
 
 func (p *processor) storeFailed() {
+	if p.fl.FailureStats != "" {
+		rep := ""
+
+		if len(p.buildFailures) > 0 {
+			rep += fmt.Sprintf(", %d failed builds", len(p.buildFailures))
+		}
+
+		if len(p.failures) > 0 {
+			rep += fmt.Sprintf(", %d failed tests (including flaky)", len(p.buildFailures))
+		}
+
+		if rep == "" {
+			rep = "no failures"
+		} else {
+			rep = rep[2:]
+		}
+
+		if err := os.WriteFile(p.fl.FailureStats, []byte(rep), 0o600); err != nil {
+			p.println("failed to store failure stats: " + err.Error())
+		}
+	}
+
 	if p.fl.FailedTests == "" || len(p.failed) == 0 {
 		return
 	}
@@ -341,6 +363,8 @@ func (p *processor) report() {
 		return
 	}
 
+	p.reportFailed()
+
 	if p.fl.Markdown {
 		p.println("### Metrics")
 		p.println()
@@ -370,7 +394,6 @@ func (p *processor) report() {
 	p.reportSlowest()
 	p.reportRaces()
 	p.reportPackages()
-	p.reportFailed()
 }
 
 func uniq(a []string) []string {

@@ -85,13 +85,14 @@ jobs:
           done
 
           # Reporting.
-          REPORT=$(go run . -markdown test-report*.jsonl)
+          REPORT=$(go run . -failure-stats failure-stats.txt -markdown test-report*.jsonl)
           echo "${REPORT}"
           
           test ! -f failed.txt || echo "Tests failed after retries: $(cat failed.txt)" 1>&2
           test ! -f failed.txt || (echo "failed=true" >> $GITHUB_OUTPUT)
           test ! -f errors.txt || (echo "failed=true" >> $GITHUB_OUTPUT)
 
+          echo "failure-stats<<EOF" >> $GITHUB_OUTPUT && cat failure-stats.txt >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           echo "report<<EOF" >> $GITHUB_OUTPUT && echo "$REPORT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           go tool cover -func=./unit.coverprofile > unit.txt
           TOTAL=$(grep 'total:' unit.txt)
@@ -144,7 +145,7 @@ jobs:
             
             </details>
             
-            <details><summary>Test stats</summary>
+            <details><summary>Test stats: ${{ steps.test.outputs.failure-stats }}</summary>
             
             ${{ steps.test.outputs.report }}
             
