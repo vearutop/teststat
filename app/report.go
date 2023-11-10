@@ -204,6 +204,72 @@ func (p *processor) reportPackages() {
 	}
 }
 
+func (p *processor) markdownFailedTests() {
+	if len(p.failures) == 0 {
+		return
+	}
+
+	p.println("<details>")
+	p.printf("<summary>Failed tests (including flaky): %d</summary>\n\n", len(p.failures))
+
+	failures := make([]test, 0, len(p.failures))
+
+	for t := range p.failures {
+		failures = append(failures, t)
+	}
+
+	sort.Slice(failures, func(i, j int) bool {
+		return failures[i].String() < failures[j].String()
+	})
+
+	for _, t := range failures {
+		output := p.failures[t]
+
+		p.println("<details>")
+		p.printf("<summary><code>%s</code></summary>\n\n", t)
+
+		p.println("```")
+		p.println(strings.Join(output, ""))
+		p.println("```")
+
+		p.println("</details>")
+	}
+
+	p.println("</details>")
+	p.println()
+}
+
+func (p *processor) markdownUnfinished() {
+	if len(p.unfinished) == 0 {
+		return
+	}
+
+	unfinished := make([]test, 0, len(p.unfinished))
+
+	for t := range p.unfinished {
+		unfinished = append(unfinished, t)
+	}
+
+	p.println("<details>")
+	p.printf("<summary>Unfinished tests: %d</summary>\n\n", len(p.unfinished))
+
+	for _, t := range unfinished {
+		output := p.outputs[t]
+
+		p.println("<details>")
+		p.printf("<summary><code>%s</code></summary>\n\n", t)
+
+		p.println("```")
+		p.println(strings.Join(output, ""))
+		p.println("```")
+
+		p.println("</details>")
+	}
+
+	p.println("</details>")
+	p.println()
+}
+
 func (p *processor) reportFailed() {
 	if len(p.failures) == 0 && len(p.buildFailures) == 0 && len(p.unfinished) == 0 {
 		return
@@ -225,63 +291,8 @@ func (p *processor) reportFailed() {
 			p.println()
 		}
 
-		if len(p.failures) > 0 {
-			p.println("<details>")
-			p.printf("<summary>Failed tests (including flaky): %d</summary>\n\n", len(p.failures))
-
-			var failures []test
-
-			for t := range p.failures {
-				failures = append(failures, t)
-			}
-
-			sort.Slice(failures, func(i, j int) bool {
-				return failures[i].String() < failures[j].String()
-			})
-
-			for _, t := range failures {
-				output := p.failures[t]
-
-				p.println("<details>")
-				p.printf("<summary><code>%s</code></summary>\n\n", t)
-
-				p.println("```")
-				p.println(strings.Join(output, ""))
-				p.println("```")
-
-				p.println("</details>")
-			}
-
-			p.println("</details>")
-			p.println()
-		}
-
-		if len(p.unfinished) > 0 {
-			var unfinished []test
-
-			for t := range p.unfinished {
-				unfinished = append(unfinished, t)
-			}
-
-			p.println("<details>")
-			p.printf("<summary>Unfinished tests: %d</summary>\n\n", len(p.unfinished))
-
-			for _, t := range unfinished {
-				output := p.outputs[t]
-
-				p.println("<details>")
-				p.printf("<summary><code>%s</code></summary>\n\n", t)
-
-				p.println("```")
-				p.println(strings.Join(output, ""))
-				p.println("```")
-
-				p.println("</details>")
-			}
-
-			p.println("</details>")
-			p.println()
-		}
+		p.markdownFailedTests()
+		p.markdownUnfinished()
 	} else {
 		if len(p.buildFailures) > 0 {
 			p.println("Failed builds:")

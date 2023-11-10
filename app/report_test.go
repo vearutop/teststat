@@ -243,7 +243,6 @@ func Test_broken(t *testing.T) {
 
 	p.report()
 
-	os.WriteFile("testdata/broken.md", buf.Bytes(), 0600)
 	expected, err := os.ReadFile("testdata/broken.md")
 	require.NoError(t, err)
 	assert.Equal(t, string(expected), buf.String())
