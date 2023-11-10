@@ -1,5 +1,4 @@
 //go:build broken
-// +build broken
 
 package deeper_test
 

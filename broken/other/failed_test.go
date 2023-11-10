@@ -1,10 +1,17 @@
 //go:build broken
-// +build broken
 
 package other_test
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestAlwaysFails(t *testing.T) {
 	t.Fail()
+}
+
+func TestThatPanics(t *testing.T) {
+	t.Parallel()
+
+	panic("ouch")
 }
