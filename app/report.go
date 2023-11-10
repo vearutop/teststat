@@ -205,7 +205,7 @@ func (p *processor) reportPackages() {
 }
 
 func (p *processor) reportFailed() {
-	if len(p.failures) == 0 && len(p.buildFailures) == 0 {
+	if len(p.failures) == 0 && len(p.buildFailures) == 0 && len(p.unfinished) == 0 {
 		return
 	}
 
@@ -255,6 +255,33 @@ func (p *processor) reportFailed() {
 			p.println("</details>")
 			p.println()
 		}
+
+		if len(p.unfinished) > 0 {
+			var unfinished []test
+
+			for t := range p.unfinished {
+				unfinished = append(unfinished, t)
+			}
+
+			p.println("<details>")
+			p.printf("<summary>Unfinished tests: %d</summary>\n\n", len(p.unfinished))
+
+			for _, t := range unfinished {
+				output := p.outputs[t]
+
+				p.println("<details>")
+				p.printf("<summary><code>%s</code></summary>\n\n", t)
+
+				p.println("```")
+				p.println(strings.Join(output, ""))
+				p.println("```")
+
+				p.println("</details>")
+			}
+
+			p.println("</details>")
+			p.println()
+		}
 	} else {
 		if len(p.buildFailures) > 0 {
 			p.println("Failed builds:")
@@ -268,6 +295,14 @@ func (p *processor) reportFailed() {
 			for test, output := range p.failures {
 				p.println(test)
 				p.println(strings.Join(output, ""))
+			}
+		}
+
+		if len(p.unfinished) > 0 {
+			p.println("Unfinished tests:")
+			for test := range p.unfinished {
+				p.println(test)
+				p.println(strings.Join(p.outputs[test], ""))
 			}
 		}
 	}
@@ -313,6 +348,10 @@ func (p *processor) storeFailureStats() {
 		}
 	}
 
+	if len(p.unfinished) > 0 {
+		rep += fmt.Sprintf(", %d unfinished test(s)", len(p.unfinished))
+	}
+
 	if len(p.dataRaces) > 0 {
 		rep += fmt.Sprintf(", %d data race(s)", len(p.dataRaces))
 	}
@@ -329,13 +368,17 @@ func (p *processor) storeFailureStats() {
 }
 
 func (p *processor) storeFailed() {
-	if p.fl.FailedTests == "" || len(p.failed) == 0 {
+	if p.fl.FailedTests == "" || (len(p.failed) == 0 && len(p.unfinished) == 0) {
 		return
 	}
 
 	failedRegex := map[string]bool{}
 
 	for t := range p.failed {
+		failedRegex["^"+t.fn+"$"] = true
+	}
+
+	for t := range p.unfinished {
 		failedRegex["^"+t.fn+"$"] = true
 	}
 
@@ -419,6 +462,8 @@ func (p *processor) report() {
 	if p.prStatus != "" {
 		p.println()
 	}
+
+	p.counts.Unfinished = len(p.unfinished)
 
 	p.filterUniqBuildFailures()
 	p.storeFailed()

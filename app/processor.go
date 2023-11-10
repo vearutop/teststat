@@ -17,16 +17,17 @@ import (
 )
 
 type counts struct {
-	DataRace  int
-	Fail      int
-	Flaky     int
-	Output    int
-	Pass      int
-	PkgTotal  int
-	PkgCached int
-	Run       int
-	Skip      int
-	Slow      int
+	DataRace   int
+	Fail       int
+	Unfinished int
+	Flaky      int
+	Output     int
+	Pass       int
+	PkgTotal   int
+	PkgCached  int
+	Run        int
+	Skip       int
+	Slow       int
 }
 
 const (
@@ -63,8 +64,10 @@ type processor struct {
 	fl                   flags
 	packageStats         map[string]packageStat
 
+	unfinished     map[test]bool
 	passed, failed map[test]int
 	failures       map[test][]string
+	outputs        map[test][]string
 
 	// buildFailures contain lines with malformed JSON, typically build errors from STDERR.
 	buildFailures []string
@@ -82,6 +85,7 @@ type packageStat struct {
 	Package string
 	Elapsed float64
 	Cached  bool
+	Failed  bool
 }
 
 type limitingWriter struct {
@@ -115,9 +119,11 @@ func newProcessor(fl flags) *processor {
 		dataRaces:         map[test]string{},
 		strippedDataRaces: map[string]string{},
 		strippedTests:     map[string][]string{},
+		unfinished:        map[test]bool{},
 		passed:            map[test]int{},
 		failed:            map[test]int{},
 		failures:          map[test][]string{},
+		outputs:           map[test][]string{},
 		fl:                fl,
 		hist: &dynhist.Collector{
 			BucketsLimit: fl.HistBuckets,
@@ -201,6 +207,10 @@ func (p *processor) status() string {
 		res += fmt.Sprintf(", fail: %d", c.Fail)
 	}
 
+	if c.Unfinished != 0 {
+		res += fmt.Sprintf(", unfinished: %d", c.Unfinished)
+	}
+
 	if c.Skip != 0 {
 		res += fmt.Sprintf(", skip: %d", c.Skip)
 	}
@@ -252,7 +262,8 @@ func (p *processor) pkgLine(l Line) {
 		p.packageStats[l.Package] = ps
 	}
 
-	if l.Action == "output" {
+	switch l.Action {
+	case output:
 		if strings.Contains(l.Output, "(cached)") {
 			p.counts.PkgCached++
 
@@ -261,6 +272,11 @@ func (p *processor) pkgLine(l Line) {
 			ps.Package = l.Package
 			p.packageStats[l.Package] = ps
 		}
+	case fail:
+		ps := p.packageStats[l.Package]
+		ps.Failed = true
+		ps.Package = l.Package
+		p.packageStats[l.Package] = ps
 	}
 }
 
@@ -273,8 +289,6 @@ func (t test) String() string {
 }
 
 func (p *processor) iterate(scanner *bufio.Scanner) error {
-	outputs := map[test][]string{}
-
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
 			return fmt.Errorf("scan failed: %w", err)
@@ -314,7 +328,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		t := test{pkg: l.Package, fn: l.Test}
 
-		out, skipLine := p.action(l, outputs, t)
+		out, skipLine := p.action(l, t)
 		if skipLine {
 			continue
 		}
@@ -336,21 +350,25 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 	return scanner.Err()
 }
 
-func (p *processor) action(l Line, outputs map[test][]string, t test) (out []string, skipLine bool) {
+func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 	switch l.Action {
+	case run:
+		p.unfinished[t] = true
 	case output:
-		outputs[t] = append(outputs[t], l.Output)
+		p.outputs[t] = append(p.outputs[t], l.Output)
 
 		return nil, true
 	case pass:
 		p.progress(false)
 		p.passed[t]++
-		delete(outputs, t)
+		delete(p.unfinished, t)
+		delete(p.outputs, t)
 	case fail:
 		p.progress(false)
 		p.failed[t]++
-		out = outputs[t]
-		delete(outputs, t)
+		out = p.outputs[t]
+		delete(p.unfinished, t)
+		delete(p.outputs, t)
 
 		if p.fl.Verbosity > 0 {
 			println("FAIL:", t.String())
@@ -364,7 +382,7 @@ func (p *processor) action(l Line, outputs map[test][]string, t test) (out []str
 			p.failures[t] = out
 		}
 	case skip:
-		delete(outputs, t)
+		delete(p.outputs, t)
 	}
 
 	return out, false

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... 2>&1 > test-report0.jsonl
+go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... > test-report0.jsonl 2>&1
 go run . -progress -verbosity 2 -skip-report -failed-tests failed.txt -skip-parent -failed-builds errors.txt test-report0.jsonl
 
 # Retries.

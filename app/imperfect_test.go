@@ -1,5 +1,4 @@
 //go:build imperfect
-// +build imperfect
 
 package app_test
 
