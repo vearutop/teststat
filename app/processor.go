@@ -382,6 +382,7 @@ func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 			p.failures[t] = out
 		}
 	case skip:
+		delete(p.unfinished, t)
 		delete(p.outputs, t)
 	}
 
