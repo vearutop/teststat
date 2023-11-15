@@ -3,3 +3,4 @@
 /.vscode
 /bench-*.txt
 /vendor
+dist/

@@ -1,0 +1,15 @@
+project_name: teststat
+builds:
+  - main: ./
+    binary: teststat
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+    ldflags:
+      - -s -w -X main.Version={{.Version}}
+archives:
+  - format: binary
