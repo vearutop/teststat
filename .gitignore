@@ -4,3 +4,4 @@
 /bench-*.txt
 /vendor
 dist/
+coverage.out
