@@ -1,0 +1,25 @@
+{"Time":"2023-11-20T00:55:30.069713+01:00","Action":"start","Package":"github.com/vearutop/teststat/imperfect"}
+{"Time":"2023-11-20T00:55:30.06984+01:00","Action":"start","Package":"github.com/vearutop/teststat/imperfect/foo"}
+{"Time":"2023-11-20T00:55:30.069865+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect/foo","Output":"testing: warning: no tests to run\n"}
+{"Time":"2023-11-20T00:55:30.069882+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect/foo","Output":"PASS\n"}
+{"Time":"2023-11-20T00:55:30.06989+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect/foo","Output":"ok  \tgithub.com/vearutop/teststat/imperfect/foo\t(cached) [no tests to run]\n"}
+{"Time":"2023-11-20T00:55:30.069899+01:00","Action":"pass","Package":"github.com/vearutop/teststat/imperfect/foo","Elapsed":0}
+{"Time":"2023-11-20T00:55:30.330173+01:00","Action":"run","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy"}
+{"Time":"2023-11-20T00:55:30.330227+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy","Output":"=== RUN   TestThatIsRacy\n"}
+{"Time":"2023-11-20T00:55:30.33024+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy","Output":"=== PAUSE TestThatIsRacy\n"}
+{"Time":"2023-11-20T00:55:30.330243+01:00","Action":"pause","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy"}
+{"Time":"2023-11-20T00:55:30.330246+01:00","Action":"run","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo"}
+{"Time":"2023-11-20T00:55:30.330248+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo","Output":"=== RUN   TestThatFlakesToo\n"}
+{"Time":"2023-11-20T00:55:30.330261+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo","Output":"=== PAUSE TestThatFlakesToo\n"}
+{"Time":"2023-11-20T00:55:30.330265+01:00","Action":"pause","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo"}
+{"Time":"2023-11-20T00:55:30.330407+01:00","Action":"cont","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo"}
+{"Time":"2023-11-20T00:55:30.330427+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo","Output":"=== CONT  TestThatFlakesToo\n"}
+{"Time":"2023-11-20T00:55:30.330526+01:00","Action":"cont","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy"}
+{"Time":"2023-11-20T00:55:30.330532+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy","Output":"=== CONT  TestThatIsRacy\n"}
+{"Time":"2023-11-20T00:55:30.330556+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo","Output":"--- PASS: TestThatFlakesToo (0.00s)\n"}
+{"Time":"2023-11-20T00:55:30.330586+01:00","Action":"pass","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatFlakesToo","Elapsed":0}
+{"Time":"2023-11-20T00:55:30.330596+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy","Output":"--- PASS: TestThatIsRacy (0.00s)\n"}
+{"Time":"2023-11-20T00:55:30.33063+01:00","Action":"pass","Package":"github.com/vearutop/teststat/imperfect","Test":"TestThatIsRacy","Elapsed":0}
+{"Time":"2023-11-20T00:55:30.330639+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Output":"PASS\n"}
+{"Time":"2023-11-20T00:55:31.334769+01:00","Action":"output","Package":"github.com/vearutop/teststat/imperfect","Output":"ok  \tgithub.com/vearutop/teststat/imperfect\t1.265s\n"}
+{"Time":"2023-11-20T00:55:31.339799+01:00","Action":"pass","Package":"github.com/vearutop/teststat/imperfect","Elapsed":1.27}

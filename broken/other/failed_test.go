@@ -15,3 +15,12 @@ func TestThatPanics(t *testing.T) {
 
 	panic("ouch")
 }
+
+func TestAlwaysFailsInSubtest(t *testing.T) {
+	t.Run("/-&?\\[]!@#$%^*()abc123_+=", func(t *testing.T) {
+		panic("can't cope")
+	})
+	t.Run("/pas/pas$ses", func(t *testing.T) {
+		println("HELLO WORLD!")
+	})
+}

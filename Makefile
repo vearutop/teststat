@@ -42,3 +42,11 @@ BUILD_FLAGS=-trimpath
 
 ## Run tests
 test: test-unit
+
+## Update golden tests for imperfect suite
+test-imperfect:
+	cd app/testdata && ./run-imperfect.sh
+
+## Update golden tests for broken suite
+test-broken:
+	cd app/testdata && ./run-broken.sh
