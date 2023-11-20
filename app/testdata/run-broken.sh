@@ -3,7 +3,7 @@
 rm -f ./test-broken*.jsonl
 rm -f broken.md
 
-go test -tags broken -short -race -json ../../broken/... > test-broken0.jsonl 2>&1
+go test -tags broken -short -race -json ../../broken/... 2>&1 > test-broken0.jsonl
 go run ../.. -progress -verbosity 2 -skip-report -failed-tests failed-broken.txt -skip-parent -failed-builds broken-errors.txt test-broken0.jsonl
 
 # Retries.

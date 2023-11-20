@@ -2,7 +2,7 @@
 
 rm -f ./test-imperfect*.jsonl
 
-go test -tags imperfect -short -race -json ../../imperfect/... > test-imperfect0.jsonl 2>&1
+go test -tags imperfect -short -race -json ../../imperfect/... 2>&1 > test-imperfect0.jsonl
 go run ../.. -progress -verbosity 2 -skip-report -failed-tests failed-imperfect.txt -skip-parent -failed-builds errors.txt test-imperfect0.jsonl
 
 # Retries.

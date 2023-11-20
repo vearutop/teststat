@@ -76,12 +76,12 @@ jobs:
         continue-on-error: true
         run: |
           # First run.
-          go test -tags broken -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... |& go run . -progress -verbosity 2 -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
+          go test -tags broken -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... 2>&1 | go run . -progress -verbosity 2 -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
           
           # Retries.
           for i in {1..20}
           do
-          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags broken -short -race -run $FAILED -json ./... |& go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
+          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags broken -short -race -run $FAILED -json ./broken/... 2>&1 | go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
           done
 
           # Reporting.
@@ -99,12 +99,6 @@ jobs:
           echo "${TOTAL}"
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
 
-      - name: Test report
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-report
-          path: test-report.jsonl
-
       - name: Annotate missing test coverage
         id: annotate
         if: matrix.go-version == env.COV_GO_VERSION && github.event.pull_request.base.sha != ''
@@ -121,6 +115,17 @@ jobs:
           echo "rep<<EOF" >> $GITHUB_OUTPUT && echo "$REP" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           echo "diff<<EOF" >> $GITHUB_OUTPUT && echo "$DIFF" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           echo "total<<EOF" >> $GITHUB_OUTPUT && echo "$TOTAL" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: broken-test-report
+          path: |
+            test-report*.jsonl
+            *.coverprofile
+            unit.txt
+            failed.txt
+            errors.txt
 
       - name: Comment test coverage
         continue-on-error: true
