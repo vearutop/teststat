@@ -14,7 +14,7 @@ env:
   COV_GO_VERSION: 1.21.x   # Version of Go to collect coverage
   TARGET_DELTA_COV: 90     # Target coverage of changed lines, in percents
 jobs:
-  test:
+  test-broken:
     strategy:
       matrix:
         go-version: [ 1.21.x ]

@@ -80,12 +80,12 @@ jobs:
         continue-on-error: true
         run: |
           # First run.
-          go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... |& go run . -progress -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
+          go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... 2>&1 | go run . -progress -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
 
           # Retries.
           for i in {1..3}
           do
-          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -short -race -run $FAILED -json ./... |& go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
+          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -short -race -run $FAILED -json ./... 2>&1 | go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
           done
 
           # Reporting.
