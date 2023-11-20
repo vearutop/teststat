@@ -79,7 +79,7 @@ jobs:
           go test -tags broken -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... 2>&1 | go run . -progress -verbosity 2 -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
           
           # Retries.
-          for i in {1..20}
+          for i in {1..3}
           do
           test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags broken -short -race -run $FAILED -json ./broken/... 2>&1 | go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
           done
