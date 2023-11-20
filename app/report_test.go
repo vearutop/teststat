@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -197,17 +199,22 @@ Goroutine 13 (running) created at:
 `, s)
 }
 
+// Update golden tests with `make test-imperfect`.
 func Test_imperfect(t *testing.T) {
 	var fl flags
 
-	fl.FailureStats = "testdata/failure-stats.txt"
+	fl.FailureStats = "testdata/failure-stats-imperfect.txt"
 	fl.Markdown = true
+	fl.Slowest = 30
+	fl.Slow = time.Second
 
 	p := newProcessor(fl)
 	buf := bytes.NewBuffer(nil)
 	p.rep = buf
 
-	for _, f := range []string{"testdata/test-report0.jsonl", "testdata/test-report1.jsonl", "testdata/test-report2.jsonl"} {
+	for i := 0; i < 8; i++ {
+		f := "testdata/test-imperfect" + strconv.Itoa(i) + ".jsonl"
+
 		if err := p.process(f); err != nil {
 			log.Fatalf("%s: %s", f, err)
 		}
@@ -219,23 +226,28 @@ func Test_imperfect(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, string(expected), buf.String())
 
-	stats, err := os.ReadFile("testdata/failure-stats.txt")
+	stats, err := os.ReadFile("testdata/failure-stats-imperfect.txt")
 	require.NoError(t, err)
-	assert.Equal(t, `1 failed test(s), 3 flaky test(s), 2 data race(s)`, strings.TrimSpace(string(stats)))
+	assert.Equal(t, `2 flaky test(s), 3 data race(s)`, strings.TrimSpace(string(stats)))
 }
 
+// Update golden tests with `make test-broken`.
 func Test_broken(t *testing.T) {
 	var fl flags
 
 	fl.FailureStats = "testdata/failure-stats-broken.txt"
 	fl.FailedTests = "testdata/failed-broken.txt"
 	fl.Markdown = true
+	fl.Slowest = 30
+	fl.Slow = time.Second
 
 	p := newProcessor(fl)
 	buf := bytes.NewBuffer(nil)
 	p.rep = buf
 
-	for _, f := range []string{"testdata/broken.jsonl"} {
+	for i := 0; i < 4; i++ {
+		f := "testdata/test-broken" + strconv.Itoa(i) + ".jsonl"
+
 		if err := p.process(f); err != nil {
 			log.Fatalf("%s: %s", f, err)
 		}
@@ -249,9 +261,9 @@ func Test_broken(t *testing.T) {
 
 	stats, err := os.ReadFile("testdata/failure-stats-broken.txt")
 	require.NoError(t, err)
-	assert.Equal(t, `2 package(s) failed build, 2 failed test(s), 1 unfinished test(s)`, strings.TrimSpace(string(stats)))
+	assert.Equal(t, `2 package(s) failed build, 3 failed test(s), 2 unfinished test(s)`, strings.TrimSpace(string(stats)))
 
 	failedRegex, err := os.ReadFile("testdata/failed-broken.txt")
 	require.NoError(t, err)
-	assert.Equal(t, `^TestAlwaysFails$|^TestThatPanics$|^TestThatPanicsInAGoroutine$`, strings.TrimSpace(string(failedRegex)))
+	assert.Equal(t, `^TestAlwaysFails$|^TestAlwaysFailsInSubtest$|^TestAlwaysFailsInSubtest//-|^TestThatPanics$|^TestThatPanicsInAGoroutine$`, strings.TrimSpace(string(failedRegex)))
 }

@@ -1,0 +1,6 @@
+# github.com/vearutop/teststat/broken_test [github.com/vearutop/teststat/broken.test]
+../../broken/build_failed_test.go:8:2: a declared and not used
+# github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]
+../../broken/deeper/build_failed_test.go:8:2: a declared and not used
+FAIL	github.com/vearutop/teststat/broken [build failed]
+FAIL	github.com/vearutop/teststat/broken/deeper [build failed]

@@ -58,7 +58,7 @@ func (p *processor) reportSlowest() {
 		return *p.slowest[i].Elapsed > *p.slowest[j].Elapsed
 	})
 
-	if len(p.slowest) > 0 {
+	if len(p.slowest) > 0 && p.fl.Slowest != 0 {
 		if p.fl.Markdown {
 			p.println("### Slow tests")
 			p.println("<details>")
@@ -73,7 +73,7 @@ func (p *processor) reportSlowest() {
 				}
 
 				dur := time.Duration(*l.Elapsed * float64(time.Second))
-				p.printf("| %s | %s | %s | %s |\n", l.Action, dur.String(), l.Package, l.Test)
+				p.printf("| %s | %s | %s | %s |\n", l.Action, dur.Round(100*time.Microsecond).String(), l.Package, l.Test)
 			}
 
 			p.println("</details>")
@@ -250,6 +250,10 @@ func (p *processor) markdownUnfinished() {
 		unfinished = append(unfinished, t)
 	}
 
+	sort.Slice(unfinished, func(i, j int) bool {
+		return unfinished[i].String() < unfinished[j].String()
+	})
+
 	p.println("<details>")
 	p.printf("<summary>Unfinished tests: %d</summary>\n\n", len(p.unfinished))
 
@@ -378,6 +382,18 @@ func (p *processor) storeFailureStats() {
 	}
 }
 
+// testRegexp converts test function name to regexp item for -run flag.
+// If function name contains any of regexp special chars, the name is truncated to first occurrence.
+// This is to avoid subtle issues of escaping chars in bash/regexp at cost of potentially retrying of a passed test
+// (with same name prefix).
+func testRegexp(fn string) string {
+	if pos := strings.IndexAny(fn, `\.+*?()|[]{}^$`); pos > -1 {
+		return "^" + fn[0:pos-1]
+	}
+
+	return "^" + fn + "$"
+}
+
 func (p *processor) storeFailed() {
 	if p.fl.FailedTests == "" || (len(p.failed) == 0 && len(p.unfinished) == 0) {
 		return
@@ -386,11 +402,11 @@ func (p *processor) storeFailed() {
 	failedRegex := map[string]bool{}
 
 	for t := range p.failed {
-		failedRegex["^"+t.fn+"$"] = true
+		failedRegex[testRegexp(t.fn)] = true
 	}
 
 	for t := range p.unfinished {
-		failedRegex["^"+t.fn+"$"] = true
+		failedRegex[testRegexp(t.fn)] = true
 	}
 
 	if p.fl.SkipParent {
@@ -401,7 +417,7 @@ func (p *processor) storeFailed() {
 					break
 				}
 
-				k = k[0:p] + "$"
+				k = testRegexp(k[1:p]) // Stripping leading "^".
 				delete(failedRegex, k)
 			}
 		}
@@ -425,7 +441,7 @@ func (p *processor) storeBuildFailures() {
 		return
 	}
 
-	if err := os.WriteFile(p.fl.FailedBuilds, []byte(strings.Join(p.buildFailures, "")), 0o600); err != nil {
+	if err := os.WriteFile(p.fl.FailedBuilds, []byte(strings.Join(p.buildFailures, "\n")), 0o600); err != nil {
 		p.println("failed to store build failed: " + err.Error())
 	}
 }
@@ -492,8 +508,8 @@ func (p *processor) report() {
 		p.println()
 
 		p.printf("```\n%s\n```\n\n", p.status())
-		p.println("Elapsed:", p.elapsed.String())
-		p.println("Slow:", p.elapsedSlow.String())
+		p.println("Elapsed:", p.elapsed.Round(time.Millisecond).String())
+		p.println("Slow:", p.elapsedSlow.Round(time.Millisecond).String())
 
 		p.println()
 
@@ -503,8 +519,8 @@ func (p *processor) report() {
 		p.println("```")
 	} else {
 		p.println("Total", p.status())
-		p.println("Elapsed:", p.elapsed.String())
-		p.println("Slow:", p.elapsedSlow.String())
+		p.println("Elapsed:", p.elapsed.Round(time.Millisecond).String())
+		p.println("Slow:", p.elapsedSlow.Round(time.Millisecond).String())
 
 		p.println()
 

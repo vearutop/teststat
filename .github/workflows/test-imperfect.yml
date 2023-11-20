@@ -14,7 +14,7 @@ env:
   COV_GO_VERSION: 1.21.x   # Version of Go to collect coverage
   TARGET_DELTA_COV: 90     # Target coverage of changed lines, in percents
 jobs:
-  test:
+  test-imperfect:
     strategy:
       matrix:
         go-version: [ 1.21.x ]
@@ -76,12 +76,12 @@ jobs:
         continue-on-error: true
         run: |
           # First run.
-          go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... |& go run . -progress -verbosity 2 -store test-report0.jsonl -skip-report -failed-tests failed.txt -skip-parent -failed-builds errors.txt -
+          go test -tags imperfect -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./imperfect/... 2>&1 | go run . -progress -verbosity 2 -store test-report0.jsonl -skip-report -failed-tests failed.txt -skip-parent -failed-builds errors.txt -
           
           # Retries.
           for i in {1..20}
           do
-          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags imperfect -short -race -run $FAILED -json ./... |& go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
+          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags imperfect -short -race -run $FAILED -json ./... 2>&1 | go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
           done
 
           # Reporting.
@@ -102,8 +102,11 @@ jobs:
       - name: Test report
         uses: actions/upload-artifact@v3
         with:
-          name: test-report
-          path: test-report.jsonl
+          name: imperfect-test-report
+          path: |
+            test-report*.jsonl
+            failed.txt
+            errors.txt
 
       - name: Annotate missing test coverage
         id: annotate
@@ -121,6 +124,17 @@ jobs:
           echo "rep<<EOF" >> $GITHUB_OUTPUT && echo "$REP" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           echo "diff<<EOF" >> $GITHUB_OUTPUT && echo "$DIFF" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           echo "total<<EOF" >> $GITHUB_OUTPUT && echo "$TOTAL" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: imperfect-test-report
+          path: |
+            test-report*.jsonl
+            *.coverprofile
+            unit.txt
+            failed.txt
+            errors.txt
 
       - name: Comment test coverage
         continue-on-error: true

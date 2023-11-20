@@ -399,7 +399,7 @@ func (p *processor) countElapsed(l Line) {
 
 	p.hist.Add(*l.Elapsed)
 
-	if *l.Elapsed > p.fl.Slow.Seconds() {
+	if *l.Elapsed >= p.fl.Slow.Seconds() {
 		p.elapsedSlow += dur
 		p.counts.Slow++
 
