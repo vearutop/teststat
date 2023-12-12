@@ -102,7 +102,7 @@ jobs:
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
           echo "total=$TOTAL" >> $GITHUB_OUTPUT      
-      
+
 
       - name: Annotate missing test coverage
         id: annotate
@@ -122,6 +122,7 @@ jobs:
           echo "total<<EOF" >> $GITHUB_OUTPUT && echo "$TOTAL" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Test report
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: broken-test-report
@@ -134,7 +135,7 @@ jobs:
 
       - name: Comment test coverage
         continue-on-error: true
-        if: matrix.go-version == env.COV_GO_VERSION && github.event.pull_request.base.sha != ''
+        if: always()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
