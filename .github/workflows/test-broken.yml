@@ -73,9 +73,9 @@ jobs:
 
       - name: Test
         id: test
-        continue-on-error: true
         run: |
           # First run.
+          set -o pipefail
           go test -tags broken -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... 2>&1 | go run . -progress -verbosity 2 -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
           
           # Retries.
@@ -84,6 +84,10 @@ jobs:
           test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -tags broken -short -race -run $FAILED -json ./broken/... 2>&1 | go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
           done
 
+      - name: Prepare test report
+        id: report
+        if: always()
+        run: |
           # Reporting.
           REPORT=$(go run . -failure-stats failure-stats.txt -markdown test-report*.jsonl)
           echo "${REPORT}"
@@ -97,7 +101,8 @@ jobs:
           go tool cover -func=./unit.coverprofile > unit.txt
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
-          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT      
+
 
       - name: Annotate missing test coverage
         id: annotate
@@ -117,6 +122,7 @@ jobs:
           echo "total<<EOF" >> $GITHUB_OUTPUT && echo "$TOTAL" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Test report
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: broken-test-report
@@ -129,14 +135,14 @@ jobs:
 
       - name: Comment test coverage
         continue-on-error: true
-        if: matrix.go-version == env.COV_GO_VERSION && github.event.pull_request.base.sha != ''
+        if: always()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: broken-test
           message: |
             ### Broken Test Coverage
-            ${{ steps.test.outputs.total }}
+            ${{ steps.report.outputs.total }}
             ${{ steps.annotate.outputs.total }}
             <details><summary>Coverage of changed lines</summary>
             
@@ -150,9 +156,9 @@ jobs:
             
             </details>
             
-            <details><summary>Test stats: ${{ steps.test.outputs.failure-stats }}</summary>
+            <details><summary>Test stats: ${{ steps.report.outputs.failure-stats }}</summary>
             
-            ${{ steps.test.outputs.report }}
+            ${{ steps.report.outputs.report }}
             
             </details>
 
@@ -166,9 +172,3 @@ jobs:
         with:
           file: ./unit.coverprofile
           flags: unittests
-
-      - name: Check test result
-        if: steps.test.outputs.failed == 'true'
-        run: |
-          echo "::error ::Test failed, see Test step for details"
-          exit 1
