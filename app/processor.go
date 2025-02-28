@@ -360,13 +360,17 @@ func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 		return nil, true
 	case pass:
 		p.progress(false)
+
 		p.passed[t]++
+
 		delete(p.unfinished, t)
 		delete(p.outputs, t)
 	case fail:
 		p.progress(false)
+
 		p.failed[t]++
 		out = p.outputs[t]
+
 		delete(p.unfinished, t)
 		delete(p.outputs, t)
 

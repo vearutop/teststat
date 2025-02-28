@@ -300,6 +300,7 @@ func (p *processor) reportFailed() {
 	} else {
 		if len(p.buildFailures) > 0 {
 			p.println("Failed builds:")
+
 			for _, output := range p.buildFailures {
 				p.println(output)
 			}
@@ -307,6 +308,7 @@ func (p *processor) reportFailed() {
 
 		if len(p.failures) > 0 {
 			p.println("Failed tests (including flaky):")
+
 			for test, output := range p.failures {
 				p.println(test)
 				p.println(strings.Join(output, ""))
@@ -315,6 +317,7 @@ func (p *processor) reportFailed() {
 
 		if len(p.unfinished) > 0 {
 			p.println("Unfinished tests:")
+
 			for test := range p.unfinished {
 				p.println(test)
 				p.println(strings.Join(p.outputs[test], ""))
