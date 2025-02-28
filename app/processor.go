@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/vearutop/teststat/app/model"
+	"github.com/vearutop/teststat/app/sqlite"
 	"io"
 	"os"
 	"strings"
@@ -22,6 +24,7 @@ type counts struct {
 	Unfinished int
 	Flaky      int
 	Output     int
+	Pause      int
 	Pass       int
 	PkgTotal   int
 	PkgCached  int
@@ -35,7 +38,9 @@ const (
 	pass   = "pass"
 	skip   = "skip"
 	output = "output"
-	run    = "run"
+	run    = "run" // Test starts.
+	pause  = "pause"
+	start  = "start" // Package starts.
 )
 
 func (c *counts) add(key string) {
@@ -50,6 +55,8 @@ func (c *counts) add(key string) {
 		c.Run++
 	case skip:
 		c.Skip++
+	case pause:
+		c.Pause++
 	}
 }
 
@@ -64,6 +71,9 @@ type processor struct {
 	fl                   flags
 	packageStats         map[string]packageStat
 
+	tests    map[test]model.TestRun
+	testRuns []model.TestRun
+
 	unfinished     map[test]bool
 	passed, failed map[test]int
 	failures       map[test][]string
@@ -73,9 +83,10 @@ type processor struct {
 	buildFailures []string
 
 	allureFormatter *report.Formatter
+	repo            *sqlite.Repository
 
-	prStatus string
-	prLast   time.Time
+	progressStatus string
+	progressLast   time.Time
 
 	rep         io.Writer
 	repLimitHit bool
@@ -83,6 +94,7 @@ type processor struct {
 
 type packageStat struct {
 	Package string
+	Started time.Time
 	Elapsed float64
 	Cached  bool
 	Failed  bool
@@ -114,11 +126,12 @@ func (l *limitingWriter) Write(p []byte) (n int, err error) {
 	return l.w.Write(p)
 }
 
-func newProcessor(fl flags) *processor {
+func newProcessor(fl flags) (*processor, error) {
 	p := &processor{
 		dataRaces:         map[test]string{},
 		strippedDataRaces: map[string]string{},
 		strippedTests:     map[string][]string{},
+		tests:             make(map[test]model.TestRun),
 		unfinished:        map[test]bool{},
 		passed:            map[test]int{},
 		failed:            map[test]int{},
@@ -131,7 +144,7 @@ func newProcessor(fl flags) *processor {
 			PrintSum:     true,
 		},
 		packageStats: map[string]packageStat{},
-		prLast:       time.Now(),
+		progressLast: time.Now(),
 		rep:          os.Stdout,
 	}
 
@@ -151,6 +164,15 @@ func newProcessor(fl flags) *processor {
 		}
 	}
 
+	if fl.Sqlite != "" {
+		repo, err := sqlite.NewRepository(fl.Sqlite)
+		if err != nil {
+			return nil, err
+		}
+
+		p.repo = repo
+	}
+
 	if fl.LimitReport > 0 {
 		p.rep = &limitingWriter{
 			w:        os.Stdout,
@@ -159,7 +181,7 @@ func newProcessor(fl flags) *processor {
 		}
 	}
 
-	return p
+	return p, nil
 }
 
 func (p *processor) process(fn string) (err error) {
@@ -243,23 +265,28 @@ func (p *processor) progress(force bool) {
 		return
 	}
 
-	if force || time.Since(p.prLast) > 5*time.Second {
+	if force || time.Since(p.progressLast) > 5*time.Second {
 		st := p.status()
 
-		if p.prStatus != st {
-			p.prLast = time.Now()
-			p.prStatus = st
+		if p.progressStatus != st {
+			p.progressLast = time.Now()
+			p.progressStatus = st
 			println(st)
 		}
 	}
 }
 
 func (p *processor) pkgLine(l Line) {
+	t := test{pkg: l.Package}
+	tr := p.tests[t]
+	tr.Package = l.Package
+
 	if l.Elapsed != nil {
 		ps := p.packageStats[l.Package]
 		ps.Elapsed = *l.Elapsed
 		ps.Package = l.Package
 		p.packageStats[l.Package] = ps
+		tr.Elapsed = *l.Elapsed
 	}
 
 	switch l.Action {
@@ -271,13 +298,27 @@ func (p *processor) pkgLine(l Line) {
 			ps.Cached = true
 			ps.Package = l.Package
 			p.packageStats[l.Package] = ps
+
+			tr.Cached = true
+			tr.Started = l.Time
+			p.tests[t] = tr
 		}
 	case fail:
 		ps := p.packageStats[l.Package]
 		ps.Failed = true
 		ps.Package = l.Package
 		p.packageStats[l.Package] = ps
+
+		tr.Result = model.Failed
+		p.testRuns = append(p.testRuns, tr)
+		delete(p.tests, t)
+	case pass:
+		tr.Result = model.Passed
+		p.testRuns = append(p.testRuns, tr)
+		delete(p.tests, t)
 	}
+
+	p.tests[t] = tr
 }
 
 type test struct {
@@ -352,7 +393,24 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 	switch l.Action {
+	case start:
+		ps := p.packageStats[l.Package]
+		ps.Started = l.Time
+		p.packageStats[l.Package] = ps
+
+		p.tests[t] = model.TestRun{
+			Package: l.Package,
+			Fn:      t.fn,
+			Result:  model.Unfinished,
+			Started: l.Time,
+		}
 	case run:
+		p.tests[t] = model.TestRun{
+			Package: l.Package,
+			Fn:      t.fn,
+			Result:  model.Unfinished,
+			Started: l.Time,
+		}
 		p.unfinished[t] = true
 	case output:
 		p.outputs[t] = append(p.outputs[t], l.Output)
@@ -360,9 +418,17 @@ func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 		return nil, true
 	case pass:
 		p.progress(false)
+		tr := p.tests[t]
+		tr.Result = model.Passed
+		if l.Elapsed != nil {
+			tr.Elapsed = *l.Elapsed
+		}
+		tr.OutputLines = len(p.outputs[t])
+		p.testRuns = append(p.testRuns, tr)
 
 		p.passed[t]++
 
+		delete(p.tests, t)
 		delete(p.unfinished, t)
 		delete(p.outputs, t)
 	case fail:
@@ -370,6 +436,14 @@ func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 
 		p.failed[t]++
 		out = p.outputs[t]
+
+		tr := p.tests[t]
+		tr.Result = model.Failed
+		if l.Elapsed != nil {
+			tr.Elapsed = *l.Elapsed
+		}
+		tr.OutputLines = len(out)
+		p.tests[t] = tr
 
 		delete(p.unfinished, t)
 		delete(p.outputs, t)
@@ -385,9 +459,22 @@ func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 		if !p.checkRace(t, out) {
 			p.failures[t] = out
 		}
+
+		p.testRuns = append(p.testRuns, p.tests[t])
+		delete(p.tests, t)
 	case skip:
+		tr := p.tests[t]
+		tr.OutputLines = len(p.outputs[t])
+		tr.Result = model.Skipped
+		p.testRuns = append(p.testRuns, tr)
+
+		delete(p.tests, t)
 		delete(p.unfinished, t)
 		delete(p.outputs, t)
+	case pause:
+		tr := p.tests[t]
+		tr.Pauses++
+		p.tests[t] = tr
 	}
 
 	return out, false

@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/vearutop/teststat/app/sqlite"
 	"os"
 	"sort"
 	"strings"
@@ -488,8 +489,30 @@ func (p *processor) filterUniqBuildFailures() {
 	p.buildFailures = res
 }
 
+func (p *processor) reportRepo() {
+	for _, tr := range p.testRuns {
+		tr.Revision = p.fl.Revision
+		run := sqlite.NewRun(tr)
+		if err := p.repo.AddRun(run); err != nil {
+			panic(err.Error())
+		}
+	}
+
+	for _, tr := range p.tests {
+		tr.Revision = p.fl.Revision
+		run := sqlite.NewRun(tr)
+		if err := p.repo.AddRun(run); err != nil {
+			panic(err.Error())
+		}
+	}
+}
+
 func (p *processor) report() {
-	if p.prStatus != "" {
+	if p.repo != nil {
+		p.reportRepo()
+	}
+
+	if p.progressStatus != "" {
 		p.println()
 	}
 

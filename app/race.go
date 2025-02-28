@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/vearutop/teststat/app/model"
 	"strings"
 )
 
@@ -33,6 +34,10 @@ func (p *processor) checkRace(t test, output []string) bool {
 	p.counts.DataRace++
 	p.dataRaces[t] = strings.Join(output, "")
 	delete(p.unfinished, t)
+
+	tr := p.tests[t]
+	tr.Result = model.DataRace
+	p.tests[t] = tr
 
 	sk := strippedKey(stripDataRace(output), p.fl.RaceDepth)
 	p.strippedDataRaces[sk] = strings.Join(output, "")

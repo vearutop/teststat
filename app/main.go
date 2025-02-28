@@ -32,6 +32,8 @@ type flags struct {
 	Progress     bool
 	Verbosity    int
 	Markdown     bool
+	Sqlite       string
+	Revision     string
 	SkipReport   bool
 	LimitReport  int
 	Allure       string
@@ -57,6 +59,8 @@ func Main() {
 	flag.BoolVar(&fl.SkipReport, "skip-report", false, "skip reporting, useful for multiple retries")
 	flag.IntVar(&fl.LimitReport, "limit-report", 60000, "maximum report length, exceeding part is truncated")
 	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")
+	flag.StringVar(&fl.Sqlite, "sqlite", "", "path to update SQLite report DB")
+	flag.StringVar(&fl.Revision, "revision", "", "code revision to store in DB, can be JSON")
 
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
 
@@ -76,7 +80,10 @@ func Main() {
 		return
 	}
 
-	p := newProcessor(fl)
+	p, err := newProcessor(fl)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for _, f := range flag.Args() {
 		if err := p.process(f); err != nil {

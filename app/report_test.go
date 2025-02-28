@@ -208,7 +208,9 @@ func Test_imperfect(t *testing.T) {
 	fl.Slowest = 30
 	fl.Slow = time.Second
 
-	p := newProcessor(fl)
+	p, err := newProcessor(fl)
+	require.NoError(t, err)
+
 	buf := bytes.NewBuffer(nil)
 	p.rep = buf
 
@@ -241,7 +243,9 @@ func Test_broken(t *testing.T) {
 	fl.Slowest = 30
 	fl.Slow = time.Second
 
-	p := newProcessor(fl)
+	p, err := newProcessor(fl)
+	require.NoError(t, err)
+
 	buf := bytes.NewBuffer(nil)
 	p.rep = buf
 
