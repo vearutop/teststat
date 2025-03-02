@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/vearutop/teststat/app/model"
-	"github.com/vearutop/teststat/app/sqlite"
 	"io"
 	"os"
 	"strings"
@@ -16,6 +14,8 @@ import (
 	"github.com/godogx/allure/report"
 	"github.com/google/uuid"
 	"github.com/vearutop/dynhist-go"
+	"github.com/vearutop/teststat/app/model"
+	"github.com/vearutop/teststat/app/sqlite"
 )
 
 type counts struct {

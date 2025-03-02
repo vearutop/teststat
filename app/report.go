@@ -2,11 +2,12 @@ package app
 
 import (
 	"fmt"
-	"github.com/vearutop/teststat/app/sqlite"
 	"os"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/vearutop/teststat/app/sqlite"
 )
 
 func (p *processor) reportFlaky() {
@@ -504,6 +505,10 @@ func (p *processor) reportRepo() {
 		if err := p.repo.AddRun(run); err != nil {
 			panic(err.Error())
 		}
+	}
+
+	if err := p.repo.SyncTotals(); err != nil {
+		panic(err.Error())
 	}
 }
 

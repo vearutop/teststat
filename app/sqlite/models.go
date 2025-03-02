@@ -1,9 +1,10 @@
 package sqlite
 
 import (
-	"github.com/vearutop/teststat/app/model"
 	"strconv"
 	"time"
+
+	"github.com/vearutop/teststat/app/model"
 )
 
 const (

@@ -1,12 +1,19 @@
 package sqlite
 
-import "github.com/bool64/sqluct"
+import (
+	"database/sql"
+
+	"github.com/bool64/sqluct"
+)
 
 type Repository struct {
 	st *sqluct.Storage
 
 	tests     map[Hash]bool
 	revisions map[Hash]bool
+
+	tx     *sql.Tx
+	rowsTx int
 }
 
 func NewRepository(fn string) (*Repository, error) {
@@ -22,20 +29,28 @@ func NewRepository(fn string) (*Repository, error) {
 	}, nil
 }
 
-func (r *Repository) AddRun(run Run) error {
-	_, err := r.st.InsertStmt(runsTable, run, sqluct.InsertIgnore).Exec()
+func (r *Repository) AddRun(run Run) (err error) {
+	if r.tx == nil {
+		r.tx, err = r.st.DB().Begin()
+	}
+
+	_, err = r.st.InsertStmt(runsTable, run, sqluct.InsertIgnore).RunWith(r.tx).Exec()
 	if err != nil {
 		return err
 	}
+
+	r.rowsTx++
 
 	if !r.tests[run.TestHash] {
 		if _, err := r.st.InsertStmt(testsTable, Test{
 			Hash:    run.TestHash,
 			Package: run.Package,
 			Test:    run.Fn,
-		}, sqluct.InsertIgnore).Exec(); err != nil {
+		}, sqluct.InsertIgnore).RunWith(r.tx).Exec(); err != nil {
 			return err
 		}
+
+		r.rowsTx++
 
 		r.tests[run.TestHash] = true
 	}
@@ -44,17 +59,32 @@ func (r *Repository) AddRun(run Run) error {
 		if _, err := r.st.InsertStmt(revisionsTable, Revision{
 			Hash:     run.RevisionHash,
 			Revision: run.Revision,
-		}, sqluct.InsertIgnore).Exec(); err != nil {
+		}, sqluct.InsertIgnore).RunWith(r.tx).Exec(); err != nil {
 			return err
 		}
 
+		r.rowsTx++
+
 		r.revisions[run.RevisionHash] = true
+	}
+
+	if r.rowsTx > 500 {
+		err = r.tx.Commit()
+		r.tx = nil
+		r.rowsTx = 0
+		return err
 	}
 
 	return nil
 }
 
 func (r *Repository) SyncTotals() error {
-	//r.st.
+	if r.tx != nil {
+		if err := r.tx.Commit(); err != nil {
+			return err
+		}
+	}
+
+	// r.st.
 	return nil
 }

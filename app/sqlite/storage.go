@@ -3,13 +3,14 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/bool64/sqluct"
 	"github.com/jmoiron/sqlx"
 	"github.com/vearutop/gooselite"
 	"github.com/vearutop/gooselite/iofs"
 	_ "modernc.org/sqlite" // SQLite3 driver.
-	"time"
 )
 
 const driverName = "sqlite"
@@ -39,6 +40,11 @@ func newStorage(fn string) (*sqluct.Storage, error) {
 	// Apply migrations.
 	if err := iofs.Up(db, migrations, "migrations"); err != nil {
 		return nil, fmt.Errorf("run up migrations: %w", err)
+	}
+
+	_, err = db.Exec("pragma journal_mode=off;")
+	if err != nil {
+		return nil, err
 	}
 
 	return st, nil

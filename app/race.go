@@ -1,8 +1,9 @@
 package app
 
 import (
-	"github.com/vearutop/teststat/app/model"
 	"strings"
+
+	"github.com/vearutop/teststat/app/model"
 )
 
 func (p *processor) checkRace(t test, output []string) bool {
