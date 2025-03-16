@@ -3,6 +3,8 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"io"
+	"log"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -32,6 +34,8 @@ func newStorage(fn string) (*sqluct.Storage, error) {
 	st.IdentifierQuoter = sqluct.QuoteBackticks
 	st.Mapper.Dialect = sqluct.DialectSQLite3
 	dialect := "sqlite3"
+
+	gooselite.SetLogger(log.New(io.Discard, "", 0))
 
 	if err := gooselite.SetDialect(dialect); err != nil {
 		return nil, fmt.Errorf("set migrations dialect: %w", err)

@@ -37,6 +37,7 @@ func (p *processor) checkRace(t test, output []string) bool {
 	delete(p.unfinished, t)
 
 	tr := p.tests[t]
+	tr.Output = output
 	tr.Result = model.DataRace
 	p.tests[t] = tr
 

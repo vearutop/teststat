@@ -165,7 +165,12 @@ func newProcessor(fl flags) (*processor, error) {
 	}
 
 	if fl.Sqlite != "" {
-		repo, err := sqlite.NewRepository(fl.Sqlite)
+		repo, err := sqlite.NewRepository(fl.Sqlite, func(r *sqlite.Repository) {
+			if fl.RecentlyFailed > 0 {
+				r.RecentlyFailedRuns = time.Duration(fl.RecentlyFailed) * 24 * time.Hour
+				r.OnlyRecentlyFailedTotals = true
+			}
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -300,7 +305,7 @@ func (p *processor) pkgLine(l Line) {
 			p.packageStats[l.Package] = ps
 
 			tr.Cached = true
-			tr.Started = l.Time
+			tr.Started = int(l.Time.UnixMilli())
 			p.tests[t] = tr
 		}
 	case fail:
@@ -402,14 +407,14 @@ func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 			Package: l.Package,
 			Fn:      t.fn,
 			Result:  model.Unfinished,
-			Started: l.Time,
+			Started: int(l.Time.UnixMilli()),
 		}
 	case run:
 		p.tests[t] = model.TestRun{
 			Package: l.Package,
 			Fn:      t.fn,
 			Result:  model.Unfinished,
-			Started: l.Time,
+			Started: int(l.Time.UnixMilli()),
 		}
 		p.unfinished[t] = true
 	case output:
@@ -442,6 +447,7 @@ func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
 		if l.Elapsed != nil {
 			tr.Elapsed = *l.Elapsed
 		}
+		tr.Output = out
 		tr.OutputLines = len(out)
 		p.tests[t] = tr
 

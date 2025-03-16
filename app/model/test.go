@@ -1,7 +1,5 @@
 package model
 
-import "time"
-
 type Test struct {
 	Pkg, Fn string
 }
@@ -17,14 +15,15 @@ const (
 )
 
 type TestRun struct {
-	Package  string `db:"-"`
-	Fn       string `db:"-"`
-	Revision string `db:"-"`
+	Package  string   `db:"-"`
+	Fn       string   `db:"-"`
+	Revision string   `db:"-"`
+	Output   []string `db:"-"`
 
-	Started     time.Time `db:"started"`
-	Result      Result    `db:"result,omitempty"`
-	OutputLines int       `db:"output_lines"`
-	Pauses      int       `db:"pauses"`
-	Cached      bool      `db:"cached"`
-	Elapsed     float64   `db:"elapsed"`
+	Started     int     `db:"started_ums" description:"Unix timestamp in milliseconds"`
+	Result      Result  `db:"result,omitempty"`
+	OutputLines int     `db:"output_lines"`
+	Pauses      int     `db:"pauses"`
+	Cached      bool    `db:"cached"`
+	Elapsed     float64 `db:"elapsed"`
 }

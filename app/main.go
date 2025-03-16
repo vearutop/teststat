@@ -38,6 +38,8 @@ type flags struct {
 	LimitReport  int
 	Allure       string
 	Version      bool
+
+	RecentlyFailed int
 }
 
 // Main is an app entry point.
@@ -60,6 +62,7 @@ func Main() {
 	flag.IntVar(&fl.LimitReport, "limit-report", 60000, "maximum report length, exceeding part is truncated")
 	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")
 	flag.StringVar(&fl.Sqlite, "sqlite", "", "path to update SQLite report DB")
+	flag.IntVar(&fl.RecentlyFailed, "recently-failed", 0, "days, only add tests that had failures within timeframe to DB report")
 	flag.StringVar(&fl.Revision, "revision", "", "code revision to store in DB, can be JSON")
 
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
