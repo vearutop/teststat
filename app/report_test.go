@@ -300,5 +300,4 @@ func Test_broken_go124(t *testing.T) {
 	failedRegex, err := os.ReadFile("testdata/failed-broken.txt")
 	require.NoError(t, err)
 	assert.Equal(t, `^TestAlwaysFails$|^TestAlwaysFailsInSubtest$|^TestAlwaysFailsInSubtest//-|^TestThatPanics$|^TestThatPanicsInAGoroutine$`, strings.TrimSpace(string(failedRegex)))
-
 }
