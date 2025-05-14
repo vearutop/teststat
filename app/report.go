@@ -185,6 +185,14 @@ func (p *processor) reportPackages() {
 			p.println("| Duration | Package |")
 			p.println("| - | - |")
 
+			sort.Slice(pstats, func(i, j int) bool {
+				if pstats[i].Elapsed == pstats[j].Elapsed {
+					return pstats[i].Package < pstats[j].Package
+				}
+
+				return pstats[i].Elapsed > pstats[j].Elapsed
+			})
+
 			for i, ps := range pstats {
 				dur := time.Duration(ps.Elapsed * float64(time.Second)).String()
 				if ps.Cached {
