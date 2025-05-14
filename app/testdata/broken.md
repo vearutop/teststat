@@ -7,9 +7,12 @@
 ../../broken/build_failed_test.go:8:2: declared and not used: a
 # github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]
 ../../broken/deeper/build_failed_test.go:8:2: declared and not used: a
+FAIL	github.com/vearutop/teststat/broken [build failed]
+FAIL	github.com/vearutop/teststat/broken/deeper [build failed]
 # github.com/vearutop/teststat/broken/tfatalf
 # [github.com/vearutop/teststat/broken/tfatalf]
 ../../broken/tfatalf/t_test.go:10:11: non-constant format string in call to (*testing.common).Fatalf
+FAIL	github.com/vearutop/teststat/broken/tfatalf [build failed]
 ```
 
 </details>
@@ -44,18 +47,18 @@
 panic: can't cope [recovered]
 	panic: can't cope
 
-goroutine 24 [running]:
-testing.tRunner.func1.2({0x1024e4a80, 0x102515ba0})
+goroutine 21 [running]:
+testing.tRunner.func1.2({0x1030b4a80, 0x1030e5ba0})
 	/opt/homebrew/opt/go/libexec/src/testing/testing.go:1734 +0x2bc
 testing.tRunner.func1()
 	/opt/homebrew/opt/go/libexec/src/testing/testing.go:1737 +0x47c
-panic({0x1024e4a80?, 0x102515ba0?})
+panic({0x1030b4a80?, 0x1030e5ba0?})
 	/opt/homebrew/opt/go/libexec/src/runtime/panic.go:787 +0x124
-github.com/vearutop/teststat/broken/other_test.TestAlwaysFailsInSubtest.func1(0xc000093880?)
+github.com/vearutop/teststat/broken/other_test.TestAlwaysFailsInSubtest.func1(0xc00008b340?)
 	/Users/vearutop/dev/teststat/broken/other/failed_test.go:21 +0x34
-testing.tRunner(0xc000093880, 0x102515168)
+testing.tRunner(0xc00008b340, 0x1030e5168)
 	/opt/homebrew/opt/go/libexec/src/testing/testing.go:1792 +0x184
-created by testing.(*T).Run in goroutine 23
+created by testing.(*T).Run in goroutine 20
 	/opt/homebrew/opt/go/libexec/src/testing/testing.go:1851 +0x688
 
 ```
@@ -74,16 +77,6 @@ created by testing.(*T).Run in goroutine 23
 === CONT  TestThatPanicsInAGoroutine
 panic: ouch2
 
-goroutine 35 [running]:
-github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine.func1()
-	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:16 +0x34
-created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 34
-	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:15 +0x44
-=== RUN   TestThatPanicsInAGoroutine
-=== PAUSE TestThatPanicsInAGoroutine
-=== CONT  TestThatPanicsInAGoroutine
-panic: ouch2
-
 goroutine 4 [running]:
 github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine.func1()
 	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:16 +0x34
@@ -94,20 +87,30 @@ created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAG
 === CONT  TestThatPanicsInAGoroutine
 panic: ouch2
 
-goroutine 35 [running]:
+goroutine 7 [running]:
 github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine.func1()
 	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:16 +0x34
-created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 34
+created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 6
 	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:15 +0x44
 === RUN   TestThatPanicsInAGoroutine
 === PAUSE TestThatPanicsInAGoroutine
 === CONT  TestThatPanicsInAGoroutine
 panic: ouch2
 
-goroutine 7 [running]:
+goroutine 22 [running]:
 github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine.func1()
 	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:16 +0x34
-created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 6
+created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 21
+	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:15 +0x44
+=== RUN   TestThatPanicsInAGoroutine
+=== PAUSE TestThatPanicsInAGoroutine
+=== CONT  TestThatPanicsInAGoroutine
+panic: ouch2
+
+goroutine 22 [running]:
+github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine.func1()
+	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:16 +0x34
+created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 21
 	/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:15 +0x44
 
 ```
@@ -151,9 +154,9 @@ Slow: 0s
 | Duration | Package |
 | - | - |
 | 1.179s | github.com/vearutop/teststat/broken/goroutine |
-| 291ms | github.com/vearutop/teststat/broken/other |
-| 0s | github.com/vearutop/teststat/broken/tfatalf |
+| 286ms | github.com/vearutop/teststat/broken/other |
 | 0s | github.com/vearutop/teststat/broken |
 | 0s | github.com/vearutop/teststat/broken/deeper |
+| 0s | github.com/vearutop/teststat/broken/tfatalf |
 </details>
 

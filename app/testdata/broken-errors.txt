@@ -2,6 +2,9 @@
 ../../broken/build_failed_test.go:8:2: declared and not used: a
 # github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]
 ../../broken/deeper/build_failed_test.go:8:2: declared and not used: a
+FAIL	github.com/vearutop/teststat/broken [build failed]
+FAIL	github.com/vearutop/teststat/broken/deeper [build failed]
 # github.com/vearutop/teststat/broken/tfatalf
 # [github.com/vearutop/teststat/broken/tfatalf]
 ../../broken/tfatalf/t_test.go:10:11: non-constant format string in call to (*testing.common).Fatalf
+FAIL	github.com/vearutop/teststat/broken/tfatalf [build failed]
