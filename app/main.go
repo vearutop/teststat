@@ -17,6 +17,10 @@ type Line struct {
 	Test    string    `json:"Test,omitempty"`
 	Output  string    `json:"Output,omitempty"`
 	Elapsed *float64  `json:"Elapsed,omitempty"`
+
+	// Added in go1.24
+	ImportPath  string `json:"ImportPath,omitempty"`
+	FailedBuild string `json:"FailedBuild,omitempty"`
 }
 
 type flags struct {

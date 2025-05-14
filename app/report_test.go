@@ -261,7 +261,7 @@ func Test_broken(t *testing.T) {
 
 	stats, err := os.ReadFile("testdata/failure-stats-broken.txt")
 	require.NoError(t, err)
-	assert.Equal(t, `2 package(s) failed build, 3 failed test(s), 2 unfinished test(s)`, strings.TrimSpace(string(stats)))
+	assert.Equal(t, `3 package(s) failed build, 3 failed test(s), 2 unfinished test(s)`, strings.TrimSpace(string(stats)))
 
 	failedRegex, err := os.ReadFile("testdata/failed-broken.txt")
 	require.NoError(t, err)

@@ -36,6 +36,10 @@ const (
 	skip   = "skip"
 	output = "output"
 	run    = "run"
+
+	// Added in go1.24.
+	buildOutput = "build-output"
+	buildFail   = "build-fail"
 )
 
 func (c *counts) add(key string) {
@@ -315,6 +319,16 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 			}
 
 			break
+		}
+
+		if l.ImportPath != "" && l.Action == buildOutput {
+			p.buildFailures = append(p.buildFailures, strings.TrimSuffix(l.Output, "\n"))
+
+			continue
+		}
+
+		if l.Package != "" && strings.HasPrefix(l.Output, "FAIL\t") && strings.HasSuffix(l.Output, " [build failed]\n") {
+			p.buildFailures = append(p.buildFailures, strings.TrimSuffix(l.Output, "\n"))
 		}
 
 		// Skipping package-level stats.
