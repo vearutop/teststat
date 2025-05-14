@@ -1,6 +1,6 @@
 module github.com/vearutop/teststat
 
-go 1.17
+go 1.24
 
 require (
 	github.com/bool64/dev v0.2.39
