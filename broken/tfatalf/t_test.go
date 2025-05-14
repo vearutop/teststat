@@ -1,3 +1,5 @@
+//go:build broken
+
 package tfatalf
 
 import (
