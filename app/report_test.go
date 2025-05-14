@@ -267,3 +267,38 @@ func Test_broken(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, `^TestAlwaysFails$|^TestAlwaysFailsInSubtest$|^TestAlwaysFailsInSubtest//-|^TestThatPanics$|^TestThatPanicsInAGoroutine$`, strings.TrimSpace(string(failedRegex)))
 }
+
+func Test_broken_go124(t *testing.T) {
+	var fl flags
+
+	fl.FailureStats = "testdata/failure-stats-broken-124.txt"
+	fl.FailedTests = "testdata/failed-broken-124.txt"
+	fl.Markdown = true
+	fl.Slowest = 30
+	fl.Slow = time.Second
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	f := "testdata/go1.24_build_error.jsonl"
+
+	if err := p.process(f); err != nil {
+		log.Fatalf("%s: %s", f, err)
+	}
+
+	p.report()
+
+	expected, err := os.ReadFile("testdata/broken.md")
+	require.NoError(t, err)
+	assert.Equal(t, string(expected), buf.String())
+
+	stats, err := os.ReadFile("testdata/failure-stats-broken.txt")
+	require.NoError(t, err)
+	assert.Equal(t, `2 package(s) failed build, 3 failed test(s), 2 unfinished test(s)`, strings.TrimSpace(string(stats)))
+
+	failedRegex, err := os.ReadFile("testdata/failed-broken.txt")
+	require.NoError(t, err)
+	assert.Equal(t, `^TestAlwaysFails$|^TestAlwaysFailsInSubtest$|^TestAlwaysFailsInSubtest//-|^TestThatPanics$|^TestThatPanicsInAGoroutine$`, strings.TrimSpace(string(failedRegex)))
+
+}
