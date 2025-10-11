@@ -335,9 +335,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		}
 
 		if l.Action == buildFail {
-			l := strings.TrimSpace(l.Output)
-
-			if l != "" {
+			if l := strings.TrimSpace(l.Output); l != "" {
 				p.buildFailures = append(p.buildFailures, l)
 			}
 
