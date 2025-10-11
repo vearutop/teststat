@@ -94,7 +94,8 @@ wget -q https://github.com/vearutop/teststat/releases/latest/download/linux_amd6
 ## Usage
 
 ```
-Usage of teststat:
+Usage: teststat [options] report.jsonl ...
+        Use `-` or `/dev/stdin` as file name to read from STDIN.
   -allure string
         path to write allure report
   -buckets int

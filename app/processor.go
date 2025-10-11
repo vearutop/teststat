@@ -335,7 +335,11 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		}
 
 		if l.Action == buildFail {
-			p.buildFailures = append(p.buildFailures, strings.TrimSuffix(l.Output, "\n"))
+			l := strings.TrimSpace(l.Output)
+
+			if l != "" {
+				p.buildFailures = append(p.buildFailures, l)
+			}
 
 			continue
 		}
@@ -378,7 +382,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 }
 
 func (p *processor) processBuildOutput(l Line) {
-	lines := strings.Split(l.Output, "\n")
+	lines := strings.Split(strings.TrimSpace(l.Output), "\n")
 
 	for _, line := range lines {
 		if strings.HasPrefix(line, "packagefile ") {
@@ -395,6 +399,14 @@ func (p *processor) processBuildOutput(l Line) {
 			p.buildCache[pkgd[0]] = pkg
 
 			continue
+		}
+
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+
+		if len(lines) == 1 && !strings.Contains(line, "$WORK") && !strings.HasPrefix(line, "cd ") {
+			p.buildFailures = append(p.buildFailures, line)
 		}
 	}
 }
