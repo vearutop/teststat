@@ -24,22 +24,23 @@ type Line struct {
 }
 
 type flags struct {
-	Slow         time.Duration
-	HistBuckets  int
-	RaceDepth    int
-	Slowest      int
-	Store        string
-	FailedTests  string
-	FailureStats string
-	SkipParent   bool
-	FailedBuilds string
-	Progress     bool
-	Verbosity    int
-	Markdown     bool
-	SkipReport   bool
-	LimitReport  int
-	Allure       string
-	Version      bool
+	Slow            time.Duration
+	HistBuckets     int
+	RaceDepth       int
+	Slowest         int
+	Store           string
+	FailedTests     string
+	FailureStats    string
+	SkipParent      bool
+	FailedBuilds    string
+	PackageCacheCSV string
+	Progress        bool
+	Verbosity       int
+	Markdown        bool
+	SkipReport      bool
+	LimitReport     int
+	Allure          string
+	Version         bool
 }
 
 // Main is an app entry point.
@@ -54,6 +55,7 @@ func Main() {
 	flag.StringVar(&fl.FailedTests, "failed-tests", "", "store regexp of failed tests to a file, useful for a retry run")
 	flag.BoolVar(&fl.SkipParent, "skip-parent", false, "exclude parent tests of subtests in regexp of failed tests, this may help to avoid running full suite on single failure")
 	flag.StringVar(&fl.FailedBuilds, "failed-builds", "", "store build failures to a file")
+	flag.StringVar(&fl.PackageCacheCSV, "pkg-cache-csv", "", "store build cache units as CSV")
 	flag.StringVar(&fl.FailureStats, "failure-stats", "", "store failure stats (total) to a file")
 	flag.BoolVar(&fl.Progress, "progress", false, "show progress")
 	flag.IntVar(&fl.Verbosity, "verbosity", 0, "output verbosity, 0 for no output, 1 for failed test names, 2 for failure message")

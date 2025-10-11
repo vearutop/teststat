@@ -1,9 +1,11 @@
 package app
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -543,6 +545,7 @@ func (p *processor) report() {
 	p.reportSlowest()
 	p.reportRaces()
 	p.reportPackages()
+	p.reportBuildCache()
 }
 
 func uniq(a []string) []string {
@@ -580,4 +583,45 @@ func shortedDataRace(r string) string {
 	}
 
 	return r
+}
+
+func (p *processor) reportBuildCache() {
+	if p.fl.PackageCacheCSV == "" {
+		return
+	}
+
+	f, err := os.Create(p.fl.PackageCacheCSV)
+	if err != nil {
+		p.println("failed to create package build cache file: " + err.Error())
+
+		return
+	}
+
+	defer func() {
+		if err := f.Close(); err != nil {
+			p.println("failed to close package build cache file: " + err.Error())
+		}
+	}()
+
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	if err := w.Write([]string{"package", "cache", "size", "timestamp"}); err != nil {
+		p.println("failed to write package build cache head: " + err.Error())
+
+		return
+	}
+
+	for pkg, info := range p.buildCache {
+		if err := w.Write([]string{
+			pkg,
+			info.BuildCacheFile,
+			strconv.Itoa(int(info.BuildCacheSize)),
+			info.BuildCacheTime.Format(time.RFC3339),
+		}); err != nil {
+			p.println("failed to write package build cache line: " + err.Error())
+
+			return
+		}
+	}
 }

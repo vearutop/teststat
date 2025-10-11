@@ -104,10 +104,14 @@ Usage: teststat [options] report.jsonl ...
         store build failures to a file
   -failed-tests string
         store regexp of failed tests to a file, useful for a retry run
+  -failure-stats string
+        store failure stats (total) to a file
   -limit-report int
         maximum report length, exceeding part is truncated (default 60000)
   -markdown
         render output as markdown
+  -pkg-cache-csv string
+        store build cache units as CSV
   -progress
         show progress
   -race-depth int
@@ -196,4 +200,20 @@ failures in a file to check them later.
 
 ```
 go test -count 5 -json -race ./... |& teststat -failed-tests failed.txt -failed-builds errors.txt -
+```
+
+### Collect build cache stats
+
+If you want to investigate huge build cache, you can collect build cache stats in a CSV file.
+
+```
+go test -x -json ./... | teststat -pkg-cache-csv build-cache.csv -
+```
+
+The resulting file looks like:
+```csv
+package,cache,size,timestamp
+vendor/golang.org/x/net/http/httpguts,/Users/vearutop/Library/Caches/go-build/c0/c09f67107fc00c93f590a6a8a27781ab71d8bf37615b963f72ea2c738f9295f4-d,78060,2025-10-11T12:00:06+02:00
+mime,/Users/vearutop/Library/Caches/go-build/dc/dc6f6b77e970371eefb13c87186408a4d4ed1b0d7578851a405e645eb1d6a174-d,1258448,2025-10-11T12:00:06+02:00
+...
 ```
