@@ -67,6 +67,7 @@ type processor struct {
 	strippedTests        map[string][]string
 	fl                   flags
 	packageStats         map[string]packageStat
+	buildCache           map[string]packageStat
 
 	unfinished     map[test]bool
 	passed, failed map[test]int
@@ -90,6 +91,11 @@ type packageStat struct {
 	Elapsed float64
 	Cached  bool
 	Failed  bool
+
+	// BuildCache is obtained from `packagefile` of `go test -x` output.
+	BuildCacheFile string
+	BuildCacheSize int64
+	BuildCacheTime time.Time
 }
 
 type limitingWriter struct {
@@ -135,6 +141,7 @@ func newProcessor(fl flags) *processor {
 			PrintSum:     true,
 		},
 		packageStats: map[string]packageStat{},
+		buildCache:   map[string]packageStat{},
 		prLast:       time.Now(),
 		rep:          os.Stdout,
 	}
@@ -322,6 +329,12 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 		}
 
 		if l.ImportPath != "" && l.Action == buildOutput {
+			p.processBuildOutput(l)
+
+			continue
+		}
+
+		if l.Action == buildFail {
 			p.buildFailures = append(p.buildFailures, strings.TrimSuffix(l.Output, "\n"))
 
 			continue
@@ -362,6 +375,28 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 	p.counts.PkgTotal = len(p.packageStats)
 
 	return scanner.Err()
+}
+
+func (p *processor) processBuildOutput(l Line) {
+	lines := strings.Split(l.Output, "\n")
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "packagefile ") {
+			pkgd := strings.SplitN(strings.TrimPrefix(line, "packagefile "), "=", 2)
+
+			pkg := p.buildCache[pkgd[0]]
+			pkg.BuildCacheFile = pkgd[1]
+
+			if fs, err := os.Stat(pkgd[1]); err == nil {
+				pkg.BuildCacheSize = fs.Size()
+				pkg.BuildCacheTime = fs.ModTime()
+			}
+
+			p.buildCache[pkgd[0]] = pkg
+
+			continue
+		}
+	}
 }
 
 func (p *processor) action(l Line, t test) (out []string, skipLine bool) {
