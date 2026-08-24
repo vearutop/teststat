@@ -1,70 +1,79 @@
+testcache: github.com/vearutop/teststat/broken/tfatalf: test ID 544c7238624c794a506e633047334c777359726c => 7fbf6bd6d97d42ee37608a48c05a76e0f57058c0f5e184080181f68451309c40
+testcache: github.com/vearutop/teststat/broken/other: test ID 6d384e52535858332d694e30344b497a42456951 => 3c8ffcf0da36920b0f2947dfb7f8930ddcf3cbecd3430ed801894e6dde805ec9
+testcache: github.com/vearutop/teststat/broken/goroutine: test ID 37524a6c5657694d4d45774839464a6c546b4256 => 5a3ad3b0d21a256c6d0cd611268264315c9ff29c26cdab1fcca062ac0f76bc95
+testcache: github.com/vearutop/teststat/broken/tfatalf: input list not found: cache entry not found: open /Users/vearutop/Library/Caches/go-build/7f/7fbf6bd6d97d42ee37608a48c05a76e0f57058c0f5e184080181f68451309c40-a: no such file or directory
+testcache: github.com/vearutop/teststat/broken/goroutine: input list not found: cache entry not found: open /Users/vearutop/Library/Caches/go-build/5a/5a3ad3b0d21a256c6d0cd611268264315c9ff29c26cdab1fcca062ac0f76bc95-a: no such file or directory
+testcache: github.com/vearutop/teststat/broken/other: input list not found: cache entry not found: open /Users/vearutop/Library/Caches/go-build/3c/3c8ffcf0da36920b0f2947dfb7f8930ddcf3cbecd3430ed801894e6dde805ec9-a: no such file or directory
+{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-output","Output":"# github.com/vearutop/teststat/broken/tfatalf\n"}
+{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-output","Output":"# [github.com/vearutop/teststat/broken/tfatalf]\n"}
+{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-output","Output":"../../broken/tfatalf/t_test.go:12:11: non-constant format string in call to (*testing.common).Fatalf\n"}
+{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-fail"}
 {"ImportPath":"github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]","Action":"build-output","Output":"# github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]\n"}
 {"ImportPath":"github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]","Action":"build-output","Output":"../../broken/deeper/build_failed_test.go:8:2: declared and not used: a\n"}
 {"ImportPath":"github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]","Action":"build-fail"}
 {"ImportPath":"github.com/vearutop/teststat/broken_test [github.com/vearutop/teststat/broken.test]","Action":"build-output","Output":"# github.com/vearutop/teststat/broken_test [github.com/vearutop/teststat/broken.test]\n"}
 {"ImportPath":"github.com/vearutop/teststat/broken_test [github.com/vearutop/teststat/broken.test]","Action":"build-output","Output":"../../broken/build_failed_test.go:8:2: declared and not used: a\n"}
 {"ImportPath":"github.com/vearutop/teststat/broken_test [github.com/vearutop/teststat/broken.test]","Action":"build-fail"}
-{"Time":"2025-05-14T17:33:18.845898+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken"}
-{"Time":"2025-05-14T17:33:18.846057+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken","Output":"FAIL\tgithub.com/vearutop/teststat/broken [build failed]\n"}
-{"Time":"2025-05-14T17:33:18.846117+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken","Elapsed":0,"FailedBuild":"github.com/vearutop/teststat/broken_test [github.com/vearutop/teststat/broken.test]"}
-{"Time":"2025-05-14T17:33:18.846189+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/deeper"}
-{"Time":"2025-05-14T17:33:18.846271+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/deeper","Output":"FAIL\tgithub.com/vearutop/teststat/broken/deeper [build failed]\n"}
-{"Time":"2025-05-14T17:33:18.846286+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/deeper","Elapsed":0,"FailedBuild":"github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]"}
-{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-output","Output":"# github.com/vearutop/teststat/broken/tfatalf\n"}
-{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-output","Output":"# [github.com/vearutop/teststat/broken/tfatalf]\n"}
-{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-output","Output":"../../broken/tfatalf/t_test.go:10:11: non-constant format string in call to (*testing.common).Fatalf\n"}
-{"ImportPath":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]","Action":"build-fail"}
-{"Time":"2025-05-14T17:33:18.928402+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/goroutine"}
-{"Time":"2025-05-14T17:33:18.928451+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/other"}
-{"Time":"2025-05-14T17:33:18.928504+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/tfatalf"}
-{"Time":"2025-05-14T17:33:18.928518+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/tfatalf","Output":"FAIL\tgithub.com/vearutop/teststat/broken/tfatalf [build failed]\n"}
-{"Time":"2025-05-14T17:33:18.928527+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/tfatalf","Elapsed":0,"FailedBuild":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]"}
-{"Time":"2025-05-14T17:33:19.102078+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine"}
-{"Time":"2025-05-14T17:33:19.102152+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"=== RUN   TestThatPanicsInAGoroutine\n"}
-{"Time":"2025-05-14T17:33:19.102167+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"=== PAUSE TestThatPanicsInAGoroutine\n"}
-{"Time":"2025-05-14T17:33:19.102169+02:00","Action":"pause","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine"}
-{"Time":"2025-05-14T17:33:19.10217+02:00","Action":"cont","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine"}
-{"Time":"2025-05-14T17:33:19.102171+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"=== CONT  TestThatPanicsInAGoroutine\n"}
-{"Time":"2025-05-14T17:33:19.210661+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails"}
-{"Time":"2025-05-14T17:33:19.210688+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails","Output":"=== RUN   TestAlwaysFails\n"}
-{"Time":"2025-05-14T17:33:19.210846+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails","Output":"--- FAIL: TestAlwaysFails (0.00s)\n"}
-{"Time":"2025-05-14T17:33:19.211054+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails","Elapsed":0}
-{"Time":"2025-05-14T17:33:19.211071+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics"}
-{"Time":"2025-05-14T17:33:19.211077+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics","Output":"=== RUN   TestThatPanics\n"}
-{"Time":"2025-05-14T17:33:19.211089+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics","Output":"=== PAUSE TestThatPanics\n"}
-{"Time":"2025-05-14T17:33:19.211093+02:00","Action":"pause","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics"}
-{"Time":"2025-05-14T17:33:19.211298+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest"}
-{"Time":"2025-05-14T17:33:19.211307+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest","Output":"=== RUN   TestAlwaysFailsInSubtest\n"}
-{"Time":"2025-05-14T17:33:19.211541+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+="}
-{"Time":"2025-05-14T17:33:19.211548+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"=== RUN   TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=\n"}
-{"Time":"2025-05-14T17:33:19.21164+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest","Output":"--- FAIL: TestAlwaysFailsInSubtest (0.00s)\n"}
-{"Time":"2025-05-14T17:33:19.211646+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"    --- FAIL: TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+= (0.00s)\n"}
-{"Time":"2025-05-14T17:33:19.21401+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"panic: can't cope [recovered]\n"}
-{"Time":"2025-05-14T17:33:19.214025+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\tpanic: can't cope\n"}
-{"Time":"2025-05-14T17:33:19.214048+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\n"}
-{"Time":"2025-05-14T17:33:19.214051+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"goroutine 21 [running]:\n"}
-{"Time":"2025-05-14T17:33:19.214055+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"testing.tRunner.func1.2({0x1030b4a80, 0x1030e5ba0})\n"}
-{"Time":"2025-05-14T17:33:19.214056+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:1734 +0x2bc\n"}
-{"Time":"2025-05-14T17:33:19.214058+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"testing.tRunner.func1()\n"}
-{"Time":"2025-05-14T17:33:19.21406+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:1737 +0x47c\n"}
-{"Time":"2025-05-14T17:33:19.214061+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"panic({0x1030b4a80?, 0x1030e5ba0?})\n"}
-{"Time":"2025-05-14T17:33:19.214068+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/runtime/panic.go:787 +0x124\n"}
-{"Time":"2025-05-14T17:33:19.214069+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"github.com/vearutop/teststat/broken/other_test.TestAlwaysFailsInSubtest.func1(0xc00008b340?)\n"}
-{"Time":"2025-05-14T17:33:19.214071+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/Users/vearutop/dev/teststat/broken/other/failed_test.go:21 +0x34\n"}
-{"Time":"2025-05-14T17:33:19.214072+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"testing.tRunner(0xc00008b340, 0x1030e5168)\n"}
-{"Time":"2025-05-14T17:33:19.214084+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:1792 +0x184\n"}
-{"Time":"2025-05-14T17:33:19.214086+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"created by testing.(*T).Run in goroutine 20\n"}
-{"Time":"2025-05-14T17:33:19.214087+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:1851 +0x688\n"}
-{"Time":"2025-05-14T17:33:19.214695+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Elapsed":0}
-{"Time":"2025-05-14T17:33:19.214717+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest","Elapsed":0}
-{"Time":"2025-05-14T17:33:19.214721+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Output":"FAIL\tgithub.com/vearutop/teststat/broken/other\t0.286s\n"}
-{"Time":"2025-05-14T17:33:19.214726+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Elapsed":0.286}
-{"Time":"2025-05-14T17:33:20.105951+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"panic: ouch2\n"}
-{"Time":"2025-05-14T17:33:20.106033+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"\n"}
-{"Time":"2025-05-14T17:33:20.106109+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"goroutine 22 [running]:\n"}
-{"Time":"2025-05-14T17:33:20.106125+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine.func1()\n"}
-{"Time":"2025-05-14T17:33:20.106132+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"\t/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:16 +0x34\n"}
-{"Time":"2025-05-14T17:33:20.106184+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 21\n"}
-{"Time":"2025-05-14T17:33:20.106212+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"\t/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:15 +0x44\n"}
-{"Time":"2025-05-14T17:33:20.107745+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Output":"FAIL\tgithub.com/vearutop/teststat/broken/goroutine\t1.179s\n"}
-{"Time":"2025-05-14T17:33:20.107776+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/goroutine","Elapsed":1.179}
+{"Time":"2026-08-24T21:00:10.501288+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken"}
+{"Time":"2026-08-24T21:00:10.501363+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken","Output":"FAIL\tgithub.com/vearutop/teststat/broken [build failed]\n"}
+{"Time":"2026-08-24T21:00:10.501373+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken","Elapsed":0,"FailedBuild":"github.com/vearutop/teststat/broken_test [github.com/vearutop/teststat/broken.test]"}
+{"Time":"2026-08-24T21:00:10.501388+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/deeper"}
+{"Time":"2026-08-24T21:00:10.501417+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/deeper","Output":"FAIL\tgithub.com/vearutop/teststat/broken/deeper [build failed]\n"}
+{"Time":"2026-08-24T21:00:10.50143+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/deeper","Elapsed":0,"FailedBuild":"github.com/vearutop/teststat/broken/deeper_test [github.com/vearutop/teststat/broken/deeper.test]"}
+{"Time":"2026-08-24T21:00:10.59857+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/goroutine"}
+testcache: github.com/vearutop/teststat/broken/goroutine: test ID 695a495a594a6a73734f68527736514167705246 => 1b4b02d123e6a8fa1dbbe86fa893308105a4119e6560ad15119e852111285682
+{"Time":"2026-08-24T21:00:10.598623+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/other"}
+testcache: github.com/vearutop/teststat/broken/goroutine: input list not found: cache entry not found: open /Users/vearutop/Library/Caches/go-build/1b/1b4b02d123e6a8fa1dbbe86fa893308105a4119e6560ad15119e852111285682-a: no such file or directory
+testcache: github.com/vearutop/teststat/broken/other: test ID 36422d666a6350665f7968687938555035396467 => 59cd2800673f1896409b019f9f55701555dc0bf461937798cbfaa7a9ffedb0e8
+testcache: github.com/vearutop/teststat/broken/other: input list not found: cache entry not found: open /Users/vearutop/Library/Caches/go-build/59/59cd2800673f1896409b019f9f55701555dc0bf461937798cbfaa7a9ffedb0e8-a: no such file or directory
+{"Time":"2026-08-24T21:00:10.598655+02:00","Action":"start","Package":"github.com/vearutop/teststat/broken/tfatalf"}
+{"Time":"2026-08-24T21:00:10.598668+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/tfatalf","Output":"FAIL\tgithub.com/vearutop/teststat/broken/tfatalf [build failed]\n"}
+{"Time":"2026-08-24T21:00:10.598677+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/tfatalf","Elapsed":0,"FailedBuild":"github.com/vearutop/teststat/broken/tfatalf [github.com/vearutop/teststat/broken/tfatalf.test]"}
+{"Time":"2026-08-24T21:00:10.83298+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine"}
+{"Time":"2026-08-24T21:00:10.833007+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"=== RUN   TestThatPanicsInAGoroutine\n"}
+{"Time":"2026-08-24T21:00:10.833059+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"=== PAUSE TestThatPanicsInAGoroutine\n"}
+{"Time":"2026-08-24T21:00:10.833061+02:00","Action":"pause","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine"}
+{"Time":"2026-08-24T21:00:10.833062+02:00","Action":"cont","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine"}
+{"Time":"2026-08-24T21:00:10.833063+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"=== CONT  TestThatPanicsInAGoroutine\n"}
+{"Time":"2026-08-24T21:00:11.37118+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails"}
+{"Time":"2026-08-24T21:00:11.371195+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails","Output":"=== RUN   TestAlwaysFails\n"}
+{"Time":"2026-08-24T21:00:11.371282+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails","Output":"--- FAIL: TestAlwaysFails (0.00s)\n"}
+{"Time":"2026-08-24T21:00:11.371396+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFails","Elapsed":0}
+{"Time":"2026-08-24T21:00:11.371405+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics"}
+{"Time":"2026-08-24T21:00:11.371407+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics","Output":"=== RUN   TestThatPanics\n"}
+{"Time":"2026-08-24T21:00:11.371412+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics","Output":"=== PAUSE TestThatPanics\n"}
+{"Time":"2026-08-24T21:00:11.371414+02:00","Action":"pause","Package":"github.com/vearutop/teststat/broken/other","Test":"TestThatPanics"}
+{"Time":"2026-08-24T21:00:11.37153+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest"}
+{"Time":"2026-08-24T21:00:11.371533+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest","Output":"=== RUN   TestAlwaysFailsInSubtest\n"}
+{"Time":"2026-08-24T21:00:11.37181+02:00","Action":"run","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+="}
+{"Time":"2026-08-24T21:00:11.371813+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"=== RUN   TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=\n"}
+{"Time":"2026-08-24T21:00:11.371865+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest","Output":"--- FAIL: TestAlwaysFailsInSubtest (0.00s)\n"}
+{"Time":"2026-08-24T21:00:11.371874+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"    --- FAIL: TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+= (0.00s)\n"}
+{"Time":"2026-08-24T21:00:11.374403+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"panic: can't cope [recovered, repanicked]\n"}
+{"Time":"2026-08-24T21:00:11.374413+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\n"}
+{"Time":"2026-08-24T21:00:11.374415+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"goroutine 6 [running]:\n"}
+{"Time":"2026-08-24T21:00:11.374418+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"testing.tRunner.func1.2({0x103056280, 0x10308b950})\n"}
+{"Time":"2026-08-24T21:00:11.374419+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:1974 +0x2b8\n"}
+{"Time":"2026-08-24T21:00:11.374421+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"testing.tRunner.func1()\n"}
+{"Time":"2026-08-24T21:00:11.374428+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:1977 +0x460\n"}
+{"Time":"2026-08-24T21:00:11.374441+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"panic({0x103056280?, 0x10308b950?})\n"}
+{"Time":"2026-08-24T21:00:11.374448+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/runtime/panic.go:860 +0x12c\n"}
+{"Time":"2026-08-24T21:00:11.374451+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"github.com/vearutop/teststat/broken/other_test.TestAlwaysFailsInSubtest.func1(0xc0001d6908?)\n"}
+{"Time":"2026-08-24T21:00:11.374455+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/Users/vearutop/dev/teststat/broken/other/failed_test.go:21 +0x34\n"}
+{"Time":"2026-08-24T21:00:11.374458+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"testing.tRunner(0xc0001d6908, 0x10308ad50)\n"}
+{"Time":"2026-08-24T21:00:11.374476+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:2036 +0x168\n"}
+{"Time":"2026-08-24T21:00:11.374484+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"created by testing.(*T).Run in goroutine 5\n"}
+{"Time":"2026-08-24T21:00:11.374489+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Output":"\t/opt/homebrew/opt/go/libexec/src/testing/testing.go:2101 +0x7c0\n"}
+{"Time":"2026-08-24T21:00:11.375308+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest//-\u0026?\\[]!@#$%^*()abc123_+=","Elapsed":0}
+{"Time":"2026-08-24T21:00:11.375323+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Test":"TestAlwaysFailsInSubtest","Elapsed":0}
+{"Time":"2026-08-24T21:00:11.375328+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/other","Output":"FAIL\tgithub.com/vearutop/teststat/broken/other\t0.777s\n"}
+{"Time":"2026-08-24T21:00:11.375331+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/other","Elapsed":0.777}
+{"Time":"2026-08-24T21:00:11.836794+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"panic: ouch2\n"}
+{"Time":"2026-08-24T21:00:11.836829+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"\n"}
+{"Time":"2026-08-24T21:00:11.836844+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"goroutine 4 [running]:\n"}
+{"Time":"2026-08-24T21:00:11.836846+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine.func1()\n"}
+{"Time":"2026-08-24T21:00:11.836849+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"\t/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:16 +0x34\n"}
+{"Time":"2026-08-24T21:00:11.836938+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"created by github.com/vearutop/teststat/broken/goroutine_test.TestThatPanicsInAGoroutine in goroutine 3\n"}
+{"Time":"2026-08-24T21:00:11.836949+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Test":"TestThatPanicsInAGoroutine","Output":"\t/Users/vearutop/dev/teststat/broken/goroutine/failed_test.go:15 +0x44\n"}
+{"Time":"2026-08-24T21:00:11.839088+02:00","Action":"output","Package":"github.com/vearutop/teststat/broken/goroutine","Output":"FAIL\tgithub.com/vearutop/teststat/broken/goroutine\t1.240s\n"}
+{"Time":"2026-08-24T21:00:11.839105+02:00","Action":"fail","Package":"github.com/vearutop/teststat/broken/goroutine","Elapsed":1.241}

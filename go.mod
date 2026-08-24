@@ -3,7 +3,7 @@ module github.com/vearutop/teststat
 go 1.24
 
 require (
-	github.com/bool64/dev v0.2.43
+	github.com/bool64/dev v0.2.45
 	github.com/godogx/allure v0.2.4
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.10.0

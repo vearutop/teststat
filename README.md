@@ -110,6 +110,8 @@ Usage: teststat [options] report.jsonl ...
         maximum report length, exceeding part is truncated (default 60000)
   -markdown
         render output as markdown
+  -metrics-json string
+        store total run metrics (counts, cache stats) as a JSON file, e.g. for gocacheprog's report_<name> DSN param
   -pkg-cache-csv string
         store build cache units as CSV
   -progress
@@ -201,6 +203,64 @@ failures in a file to check them later.
 ```
 go test -count 5 -json -race ./... |& teststat -failed-tests failed.txt -failed-builds errors.txt -
 ```
+
+### Assess test-result cache health
+
+`go test` caches whole test results per package, separately from the build cache above - a
+package whose inputs (source, env, and any file it reads) haven't changed should print
+`(cached)` and skip re-running its tests entirely. To see *why* a package didn't cache on a given
+run, set `GODEBUG=gocachetest=1` and keep piping stdout+stderr together as usual:
+
+```
+GODEBUG=gocachetest=1 go test -json ./... |& teststat -markdown -
+```
+
+This adds a "Test cache" section to the report: how many packages were cached, missed, failing
+(a failing result is never cached, so it's excluded from the miss judgment), or never a caching
+candidate at all (no test files, or `-run`/`-bench`/`-fuzz` matched nothing) -- and, for each miss,
+a short, deduplicated, actionable reason (e.g. "input file modified within the last 2s:
+/path/to/marker.txt", "no prior cached result found") rather than `go`'s own raw, repetitive
+internal cache-path chatter. Without `GODEBUG=gocachetest=1` set, the cached/miss counts still
+show, just without reasons.
+
+This is a single-run assessment: it tells you about the one `go test` invocation you just piped
+in, not a before/after comparison. Comparing separate runs (e.g. a clean-cache baseline vs. a
+real CI run) needs a different tool - see [`gotestcache`](https://github.com/vearutop/gotestcache) for that.
+
+### Attach total metrics to a gocacheprog session report
+
+`-metrics-json <path>` writes this run's aggregate counts (pass/fail/flaky/slow/data races, plus
+the test-cache stats from the section above) as a single JSON file, meant to be picked up by
+something else's report rather than read by a human directly.
+
+```
+GODEBUG=gocachetest=1 go test -json ./... |& teststat -metrics-json teststat-metrics.json -
+```
+
+```json
+{
+  "pass": 328,
+  "fail": 0,
+  "unfinished": 0,
+  "flaky": 0,
+  "skip": 0,
+  "data_races": 0,
+  "slow": 2,
+  "elapsed_s": 41.3,
+  "elapsed_slow_s": 2.1,
+  "pkg_total": 342,
+  "pkg_cached": 328,
+  "pkg_cache_miss": 2,
+  "pkg_failing": 0,
+  "pkg_no_tests": 12
+}
+```
+
+If you're running under [`gocacheprog`](https://github.com/vearutop/gocacheprog)'s
+`-github-actions-init`/`-github-actions-done`, pass a matching
+`report_teststat=<path>` query param on the init DSN and write `-metrics-json` to that same path
+during the job - `-github-actions-done` reads it back and inlines it into that session's
+`sessions.jsonl` line under `"teststat"`, no separate upload step needed.
 
 ### Collect build cache stats
 

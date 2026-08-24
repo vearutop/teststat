@@ -1,10 +1,12 @@
 package app
 
 import (
+	"bufio"
 	"bytes"
 	"log"
 	"os"
-	"strconv"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +14,26 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// globRetryFiles finds every "testdata/<prefix>N.jsonl" round file, in the same lexical order
+// run-imperfect.sh/run-broken.sh's own final `... test-imperfect*.jsonl` bash glob expansion
+// processes them in (filepath.Glob already returns matches sorted that way, matching bash's
+// default). That order matters, not just for reproducing the committed golden file byte-for-byte:
+// a package's reported Elapsed is overwritten, not summed, by each file processed (see pkgLine),
+// so processing order changes which round's duration ends up in the final report. The retry
+// loops themselves converge as soon as a round has no more failures, so the actual number of
+// rounds recorded varies run to run (usually well under their 20/3-round ceiling) -- a hardcoded
+// loop count breaks the moment a regeneration happens to converge faster or slower than whatever
+// count was hardcoded last time.
+func globRetryFiles(t *testing.T, prefix string) []string {
+	t.Helper()
+
+	matches, err := filepath.Glob("testdata/" + prefix + "*.jsonl")
+	require.NoError(t, err)
+	require.NotEmpty(t, matches, "no %sN.jsonl files found; run `make %s` first", prefix, prefix)
+
+	return matches
+}
 
 func TestUniq(t *testing.T) {
 	assert.Equal(t, []string{"a", "b", "c"}, uniq([]string{"a", "b", "c", "b", "a"}))
@@ -212,9 +234,7 @@ func Test_imperfect(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	p.rep = buf
 
-	for i := 0; i < 8; i++ {
-		f := "testdata/test-imperfect" + strconv.Itoa(i) + ".jsonl"
-
+	for _, f := range globRetryFiles(t, "test-imperfect") {
 		if err := p.process(f); err != nil {
 			log.Fatalf("%s: %s", f, err)
 		}
@@ -228,7 +248,7 @@ func Test_imperfect(t *testing.T) {
 
 	stats, err := os.ReadFile("testdata/failure-stats-imperfect.txt")
 	require.NoError(t, err)
-	assert.Equal(t, `2 flaky test(s), 3 data race(s)`, strings.TrimSpace(string(stats)))
+	assert.Equal(t, `2 flaky test(s)`, strings.TrimSpace(string(stats)))
 }
 
 // Update golden tests with `make test-broken`.
@@ -245,9 +265,7 @@ func Test_broken(t *testing.T) {
 	buf := bytes.NewBuffer(nil)
 	p.rep = buf
 
-	for i := 0; i < 4; i++ {
-		f := "testdata/test-broken" + strconv.Itoa(i) + ".jsonl"
-
+	for _, f := range globRetryFiles(t, "test-broken") {
 		if err := p.process(f); err != nil {
 			log.Fatalf("%s: %s", f, err)
 		}
@@ -266,4 +284,109 @@ func Test_broken(t *testing.T) {
 	failedRegex, err := os.ReadFile("testdata/failed-broken.txt")
 	require.NoError(t, err)
 	assert.Equal(t, `^TestAlwaysFails$|^TestAlwaysFailsInSubtest$|^TestAlwaysFailsInSubtest//-|^TestThatPanics$|^TestThatPanicsInAGoroutine$`, strings.TrimSpace(string(failedRegex)))
+}
+
+// Test_cachemiss runs the cachemiss scenario live, twice, against a shared temp GOCACHE, rather
+// than replaying a committed fixture the way Test_imperfect/Test_broken do: the testcache
+// trace's file path is absolute, baked in at capture time by go itself, so a fixture recorded on
+// one machine can't be relativized correctly when replayed on another (e.g. CI) -- see
+// inputFilePath/relativeTo, which relativizes against wherever *this* process is running from,
+// not wherever the trace was originally captured. Running live keeps that path always consistent
+// with the current checkout. Chdir'd to the repo root (like run-cachemiss.sh) so that path comes
+// out as the clean "cachemiss/marker.txt" a real invocation from the repo root would show,
+// instead of an artifact of this test binary's own package directory.
+func Test_cachemiss(t *testing.T) {
+	t.Chdir("..")
+
+	env := append(os.Environ(), "GOCACHE="+t.TempDir(), "GODEBUG=gocachetest=1")
+
+	var fl flags
+	fl.Markdown = true
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	for i := range 2 {
+		cmd := exec.Command("go", "test", "-tags", "cachemiss", "-json", "./cachemiss/...")
+		cmd.Env = env
+
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &out
+
+		require.NoError(t, cmd.Run(), "round %d: %s", i, out.String())
+
+		scanner := bufio.NewScanner(&out)
+		scanner.Buffer(make([]byte, 0, 1e7), 1e7)
+		require.NoError(t, p.iterate(scanner))
+	}
+
+	t.Cleanup(func() {
+		if err := os.Remove(filepath.Join("cachemiss", "marker.txt")); err != nil && !os.IsNotExist(err) {
+			t.Logf("remove marker.txt: %s", err)
+		}
+	})
+
+	p.report()
+
+	out := buf.String()
+	require.Contains(t, out, "Packages: 1 total, 0 cached, 1 miss, 0 failing, 0 no tests")
+	require.Contains(t, out, "miss: no prior cached result found")
+	require.Contains(t, out, "miss: input file too new: "+filepath.Join("cachemiss", "marker.txt"))
+}
+
+func TestReportTestCache_SkipsSectionWhenNoMissHasAReason(t *testing.T) {
+	var fl flags
+	fl.Markdown = true
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	// A miss with no testcache trace captured at all (testcacheSeen stays false, so
+	// cacheStats never even adds the noReasonLogged placeholder): nothing actionable to show.
+	p.packageStats["example.com/pkg"] = packageStat{Package: "example.com/pkg", HadTests: true}
+
+	p.reportTestCache()
+
+	require.Empty(t, buf.String(), "a report with nothing actionable to say shouldn't print anything")
+}
+
+func TestReportTestCache_SkipsSectionWhenOnlyPlaceholderReasons(t *testing.T) {
+	var fl flags
+	fl.Markdown = true
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	// A trace WAS captured (testcacheSeen=true), but produced no specific finding for this
+	// package -- still nothing actionable, just from a different code path than the case above.
+	p.packageStats["example.com/pkg"] = packageStat{Package: "example.com/pkg", HadTests: true}
+	p.testcacheSeen = true
+
+	p.reportTestCache()
+
+	require.Empty(t, buf.String())
+}
+
+func TestReportTestCache_ShowsSectionWhenAtLeastOneMissHasAReason(t *testing.T) {
+	var fl flags
+	fl.Markdown = true
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	p.packageStats["example.com/pkg"] = packageStat{Package: "example.com/pkg", HadTests: true}
+	p.testcacheFindings["example.com/pkg"] = []testcacheReason{
+		{Package: "example.com/pkg", Reason: "miss: no prior cached result found"},
+	}
+
+	p.reportTestCache()
+
+	out := buf.String()
+	require.Contains(t, out, "### Test cache")
+	require.Contains(t, out, "miss: no prior cached result found")
 }

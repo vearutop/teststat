@@ -1,0 +1,13 @@
+testcache: github.com/vearutop/teststat/cachemiss: test ID 6b41357778586747796f4f3766394d744a6d6d59 => 99906ae34d98f12d8e8b015dbd275fd3ab8b3779eacd5baebb54ee7fe09244f7
+testcache: github.com/vearutop/teststat/cachemiss: input list not found: cache entry not found: open /var/folders/vm/8hjxcr4j17vc7q0c1r_h34gc0000gn/T/tmp.bgfCJNAHlP/99/99906ae34d98f12d8e8b015dbd275fd3ab8b3779eacd5baebb54ee7fe09244f7-a: no such file or directory
+{"Time":"2026-08-24T21:21:59.805889+02:00","Action":"start","Package":"github.com/vearutop/teststat/cachemiss"}
+testcache: github.com/vearutop/teststat/cachemiss: test ID 6273452d4568336e3448546b4d6d565462643150 => d3880b2fdcd8f03acc014a3dfeeb398e83fe721cbf9314e2a7de41a251fdcee0
+testcache: github.com/vearutop/teststat/cachemiss: input list not found: cache entry not found: open /var/folders/vm/8hjxcr4j17vc7q0c1r_h34gc0000gn/T/tmp.bgfCJNAHlP/d3/d3880b2fdcd8f03acc014a3dfeeb398e83fe721cbf9314e2a7de41a251fdcee0-a: no such file or directory
+{"Time":"2026-08-24T21:22:00.036043+02:00","Action":"run","Package":"github.com/vearutop/teststat/cachemiss","Test":"TestThatMissesCache"}
+{"Time":"2026-08-24T21:22:00.036079+02:00","Action":"output","Package":"github.com/vearutop/teststat/cachemiss","Test":"TestThatMissesCache","Output":"=== RUN   TestThatMissesCache\n"}
+{"Time":"2026-08-24T21:22:00.036305+02:00","Action":"output","Package":"github.com/vearutop/teststat/cachemiss","Test":"TestThatMissesCache","Output":"--- PASS: TestThatMissesCache (0.00s)\n"}
+{"Time":"2026-08-24T21:22:00.036338+02:00","Action":"pass","Package":"github.com/vearutop/teststat/cachemiss","Test":"TestThatMissesCache","Elapsed":0}
+{"Time":"2026-08-24T21:22:00.036361+02:00","Action":"output","Package":"github.com/vearutop/teststat/cachemiss","Output":"PASS\n"}
+{"Time":"2026-08-24T21:22:00.03692+02:00","Action":"output","Package":"github.com/vearutop/teststat/cachemiss","Output":"ok  \tgithub.com/vearutop/teststat/cachemiss\t0.231s\n"}
+testcache: github.com/vearutop/teststat/cachemiss: input file /Users/vearutop/dev/teststat/cachemiss/marker.txt: file used as input is too new
+{"Time":"2026-08-24T21:22:00.037015+02:00","Action":"pass","Package":"github.com/vearutop/teststat/cachemiss","Elapsed":0.231}

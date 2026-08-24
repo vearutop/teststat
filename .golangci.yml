@@ -10,6 +10,8 @@ linters:
     - gocognit # TODO review
     - funlen
     - testpackage
+    - embeddedstructfieldcheck
+    - nilnil
     - noinlineerr
     - wsl_v5
     - funcorder

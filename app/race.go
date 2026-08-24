@@ -42,24 +42,24 @@ func (p *processor) checkRace(t test, output []string) bool {
 }
 
 func strippedKey(stripped [][]string, limit int) string {
-	var res string
-
 	if len(stripped) < 2 {
 		return ""
 	}
 
+	var b strings.Builder
+
 	// Taking only first 2 traces (Read/Write and Previous Write).
 	for i := 0; i <= 1; i++ {
 		if len(stripped[i]) >= limit {
-			res += strings.Join(stripped[i][0:limit], "\n")
+			b.WriteString(strings.Join(stripped[i][0:limit], "\n"))
 		} else {
-			res += strings.Join(stripped[i], "\n")
+			b.WriteString(strings.Join(stripped[i], "\n"))
 		}
 
-		res += "\n=====\n"
+		b.WriteString("\n=====\n")
 	}
 
-	return res
+	return b.String()
 }
 
 func stripDataRace(data []string) [][]string {

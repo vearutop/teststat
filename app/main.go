@@ -11,7 +11,7 @@ import (
 
 // Line structure describes single event of `go test -json` report.
 type Line struct {
-	Time    time.Time `json:"Time,omitempty"`
+	Time    time.Time `json:"Time,omitzero"`
 	Action  string    `json:"Action,omitempty"`
 	Package string    `json:"Package,omitempty"`
 	Test    string    `json:"Test,omitempty"`
@@ -41,6 +41,7 @@ type flags struct {
 	LimitReport     int
 	Allure          string
 	Version         bool
+	MetricsJSON     string
 }
 
 // Main is an app entry point.
@@ -63,6 +64,7 @@ func Main() {
 	flag.BoolVar(&fl.SkipReport, "skip-report", false, "skip reporting, useful for multiple retries")
 	flag.IntVar(&fl.LimitReport, "limit-report", 60000, "maximum report length, exceeding part is truncated")
 	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")
+	flag.StringVar(&fl.MetricsJSON, "metrics-json", "", "store total run metrics (counts, cache stats) as a JSON file, e.g. for gocacheprog's report_<name> DSN param")
 
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
 

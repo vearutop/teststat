@@ -336,6 +336,74 @@ func (p *processor) reportFailed() {
 	}
 }
 
+func (p *processor) reportTestCache() {
+	total, cached, miss, failing, noTests, misses := p.cacheStats()
+	if total == 0 {
+		return
+	}
+
+	hasReason := false
+
+	for _, m := range misses {
+		if m.hasReason() {
+			hasReason = true
+
+			break
+		}
+	}
+
+	if !hasReason {
+		// Nothing actionable to show: either there were no misses at all, or every one of them
+		// is just an unexplained "unknown"/noReasonLogged placeholder (no GODEBUG=gocachetest=1
+		// trace captured) -- a whole section of unexplained counts isn't worth the space.
+		return
+	}
+
+	summary := fmt.Sprintf("%d total, %d cached, %d miss, %d failing, %d no tests", total, cached, miss, failing, noTests)
+
+	missReason := func(m cachePkg) string {
+		if len(m.Reasons) == 0 {
+			return "unknown (rerun with GODEBUG=gocachetest=1, combined stdout+stderr, e.g. `|&`)"
+		}
+
+		return strings.Join(m.Reasons, "; ")
+	}
+
+	if p.fl.Markdown {
+		p.println("### Test cache")
+		p.println()
+		p.println("Packages:", summary)
+		p.println()
+
+		if len(misses) > 0 {
+			p.println("<details>")
+			p.printf("<summary>Cache misses: %d</summary>\n\n", len(misses))
+
+			p.println("| Package | Reason |")
+			p.println("| - | - |")
+
+			for _, m := range misses {
+				p.printf("| %s | %s |\n", m.Package, missReason(m))
+			}
+
+			p.println("</details>")
+			p.println()
+		}
+	} else {
+		p.println("Test cache:", summary)
+
+		if len(misses) > 0 {
+			p.println("Cache misses:")
+
+			for _, m := range misses {
+				p.printf("%s: %s\n", m.Package, missReason(m))
+			}
+		}
+
+		p.println()
+	}
+}
+
 func (p *processor) storeFailureStats() {
 	if p.fl.FailureStats == "" {
 		return
@@ -459,7 +527,7 @@ func (p *processor) storeBuildFailures() {
 	}
 }
 
-func (p *processor) println(a ...interface{}) {
+func (p *processor) println(a ...any) {
 	if p.repLimitHit {
 		return
 	}
@@ -469,7 +537,7 @@ func (p *processor) println(a ...interface{}) {
 	}
 }
 
-func (p *processor) printf(format string, a ...interface{}) {
+func (p *processor) printf(format string, a ...any) {
 	if p.repLimitHit {
 		return
 	}
@@ -509,6 +577,7 @@ func (p *processor) report() {
 	p.storeFailed()
 	p.storeFailureStats()
 	p.storeBuildFailures()
+	p.storeMetricsJSON()
 
 	if p.fl.SkipReport {
 		return
@@ -545,6 +614,7 @@ func (p *processor) report() {
 	p.reportSlowest()
 	p.reportRaces()
 	p.reportPackages()
+	p.reportTestCache()
 	p.reportBuildCache()
 }
 
