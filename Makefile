@@ -1,4 +1,4 @@
-#GOLANGCI_LINT_VERSION := "v2.5.0" # Optional configuration to pinpoint golangci-lint version.
+#GOLANGCI_LINT_VERSION := "v2.11.3" # Optional configuration to pinpoint golangci-lint version.
 
 # The head of Makefile determines location of dev-go to include standard targets.
 GO ?= go
@@ -50,3 +50,7 @@ test-imperfect:
 ## Update golden tests for broken suite
 test-broken:
 	cd app/testdata && ./run-broken.sh
+
+## Update golden tests for cachemiss suite
+test-imperfect:
+	cd app/testdata && ./run-cachemiss.sh

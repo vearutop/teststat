@@ -66,37 +66,12 @@ jobs:
 
       - name: Test
         id: test
-        continue-on-error: true
         run: |
-          # First run.
-          go test -short -coverprofile=unit.coverprofile -covermode=atomic -race -json ./... 2>&1 | go run . -progress -store test-report0.jsonl -skip-report -failed-tests failed.txt -failed-builds errors.txt -
-
-          # Retries.
-          for i in {1..3}
-          do
-          test ! -f failed.txt || (export FAILED=$(cat failed.txt) && rm failed.txt && echo "Retry $i: $FAILED" && go test -short -race -run $FAILED -json ./... 2>&1 | go run . -progress -store test-report${i}.jsonl -skip-report -failed-tests failed.txt -)
-          done
-
-          # Reporting.
-          REPORT=$(go run . -failure-stats failure-stats.txt -markdown test-report*.jsonl)
-          echo "${REPORT}"
-          
-          test ! -f failed.txt || echo "Tests failed after retries: $(cat failed.txt)" 1>&2
-          test ! -f failed.txt || (echo "failed=true" >> $GITHUB_OUTPUT)
-          test ! -f errors.txt || (echo "failed=true" >> $GITHUB_OUTPUT)
-
-          echo "failure-stats<<EOF" >> $GITHUB_OUTPUT && cat failure-stats.txt >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
-          echo "report<<EOF" >> $GITHUB_OUTPUT && echo "$REPORT" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
+          make test-unit
           go tool cover -func=./unit.coverprofile > unit.txt
           TOTAL=$(grep 'total:' unit.txt)
           echo "${TOTAL}"
           echo "total=$TOTAL" >> $GITHUB_OUTPUT
-
-      - name: Test report
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-report
-          path: test-report.jsonl
 
       - name: Annotate missing test coverage
         id: annotate
@@ -105,8 +80,9 @@ jobs:
           curl -sLO https://github.com/vearutop/gocovdiff/releases/download/v1.4.2/linux_amd64.tar.gz && tar xf linux_amd64.tar.gz && rm linux_amd64.tar.gz
           gocovdiff_hash=$(git hash-object ./gocovdiff)
           [ "$gocovdiff_hash" == "c37862c73a677e5a9c069470287823ab5bbf0244" ] || (echo "::error::unexpected hash for gocovdiff, possible tampering: $gocovdiff_hash" && exit 1)
-          git fetch origin master ${{ github.event.pull_request.base.sha }}
-          REP=$(./gocovdiff -mod github.com/$GITHUB_REPOSITORY -cov unit.coverprofile -gha-annotations gha-unit.txt -delta-cov-file delta-cov-unit.txt -target-delta-cov ${TARGET_DELTA_COV})
+          # Fetch PR diff from GitHub API.
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github.v3.diff" https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} > pull_request.diff
+          REP=$(./gocovdiff -diff pull_request.diff -mod github.com/$GITHUB_REPOSITORY -cov unit.coverprofile -gha-annotations gha-unit.txt -delta-cov-file delta-cov-unit.txt -target-delta-cov ${TARGET_DELTA_COV})
           echo "${REP}"
           cat gha-unit.txt
           DIFF=$(test -e unit-base.txt && ./gocovdiff -mod github.com/$GITHUB_REPOSITORY -func-cov unit.txt -func-base-cov unit-base.txt || echo "Missing base coverage file")
@@ -137,12 +113,6 @@ jobs:
             ${{ steps.annotate.outputs.diff }}
             
             </details>
-            
-            <details><summary>Test stats: ${{ steps.test.outputs.failure-stats }}</summary>
-            
-            ${{ steps.test.outputs.report }}
-            
-            </details>
 
       - name: Store base coverage
         if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' }}
@@ -154,9 +124,3 @@ jobs:
         with:
           files: ./unit.coverprofile
           flags: unittests
-
-      - name: Check test result
-        if: steps.test.outputs.failed == 'true'
-        run: |
-          echo "::error ::Test failed, see Test step for details"
-          exit 1

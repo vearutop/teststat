@@ -68,6 +68,8 @@ type processor struct {
 	fl                   flags
 	packageStats         map[string]packageStat
 	buildCache           map[string]packageStat
+	testcacheFindings    map[string][]testcacheReason
+	testcacheSeen        bool
 
 	unfinished     map[test]bool
 	passed, failed map[test]int
@@ -87,10 +89,11 @@ type processor struct {
 }
 
 type packageStat struct {
-	Package string
-	Elapsed float64
-	Cached  bool
-	Failed  bool
+	Package  string
+	Elapsed  float64
+	Cached   bool
+	Failed   bool
+	HadTests bool // false if no Test != "" event was ever seen: no test files, or -run/-bench/-fuzz matched nothing.
 
 	// BuildCache is obtained from `packagefile` of `go test -x` output.
 	BuildCacheFile string
@@ -140,10 +143,11 @@ func newProcessor(fl flags) *processor {
 			WeightFunc:   dynhist.ExpWidth(1.2, 0.9),
 			PrintSum:     true,
 		},
-		packageStats: map[string]packageStat{},
-		buildCache:   map[string]packageStat{},
-		prLast:       time.Now(),
-		rep:          os.Stdout,
+		packageStats:      map[string]packageStat{},
+		buildCache:        map[string]packageStat{},
+		testcacheFindings: map[string][]testcacheReason{},
+		prLast:            time.Now(),
+		rep:               os.Stdout,
 	}
 
 	if fl.Allure != "" {
@@ -312,6 +316,16 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 				continue
 			}
 
+			if line := scanner.Text(); isTestcacheLine(line) {
+				p.testcacheSeen = true
+
+				if reason, ok := parseTestcacheLine(line); ok {
+					p.testcacheFindings[reason.Package] = append(p.testcacheFindings[reason.Package], reason)
+				}
+
+				continue
+			}
+
 			p.buildFailures = append(p.buildFailures, scanner.Text())
 
 			continue
@@ -352,6 +366,11 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 			continue
 		}
+
+		ps := p.packageStats[l.Package]
+		ps.Package = l.Package
+		ps.HadTests = true
+		p.packageStats[l.Package] = ps
 
 		p.counts.add(l.Action)
 
