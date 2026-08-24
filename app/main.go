@@ -11,7 +11,7 @@ import (
 
 // Line structure describes single event of `go test -json` report.
 type Line struct {
-	Time    time.Time `json:"Time,omitempty"`
+	Time    time.Time `json:"Time,omitzero"`
 	Action  string    `json:"Action,omitempty"`
 	Package string    `json:"Package,omitempty"`
 	Test    string    `json:"Test,omitempty"`

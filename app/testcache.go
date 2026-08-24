@@ -22,7 +22,11 @@ const noReasonLogged = "no testcache reason logged"
 // false for both an empty Reasons (no GODEBUG=gocachetest=1 trace captured) and the sole
 // noReasonLogged placeholder (a trace was captured but didn't explain this particular miss).
 func (c cachePkg) hasReason() bool {
-	return len(c.Reasons) > 0 && !(len(c.Reasons) == 1 && c.Reasons[0] == noReasonLogged)
+	if len(c.Reasons) == 0 {
+		return false
+	}
+
+	return len(c.Reasons) != 1 || c.Reasons[0] != noReasonLogged
 }
 
 // cacheStats assesses this single run's own test-result cache health: how many packages showed
@@ -60,6 +64,7 @@ func (p *processor) cacheStats() (total, cached, miss, failing, noTests int, mis
 				}
 
 				seen[line] = true
+
 				reasons = append(reasons, line)
 			}
 
@@ -129,6 +134,7 @@ func categorizeTestcachePayload(payload string) (reason, detail string, matched 
 		return "disabled: outside module root, GOPATH, or GOROOT", "", true
 	case strings.HasPrefix(payload, "caching disabled for test argument:"):
 		arg := strings.TrimSpace(strings.TrimPrefix(payload, "caching disabled for test argument:"))
+
 		return "disabled: non-cacheable test argument", arg, true
 
 	case strings.HasPrefix(payload, "input list not found:"), strings.HasPrefix(payload, "test output not found:"):

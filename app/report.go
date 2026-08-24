@@ -527,7 +527,7 @@ func (p *processor) storeBuildFailures() {
 	}
 }
 
-func (p *processor) println(a ...interface{}) {
+func (p *processor) println(a ...any) {
 	if p.repLimitHit {
 		return
 	}
@@ -537,7 +537,7 @@ func (p *processor) println(a ...interface{}) {
 	}
 }
 
-func (p *processor) printf(format string, a ...interface{}) {
+func (p *processor) printf(format string, a ...any) {
 	if p.repLimitHit {
 		return
 	}

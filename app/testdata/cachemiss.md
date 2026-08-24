@@ -19,7 +19,7 @@ Slow: 0s
 
 | Duration | Package |
 | - | - |
-| 210ms | github.com/vearutop/teststat/cachemiss |
+| 240ms | github.com/vearutop/teststat/cachemiss |
 </details>
 
 ### Test cache
@@ -31,6 +31,6 @@ Packages: 1 total, 0 cached, 1 miss, 0 failing, 0 no tests
 
 | Package | Reason |
 | - | - |
-| github.com/vearutop/teststat/cachemiss | miss: no prior cached result found; miss: input file too new: ../../cachemiss/marker.txt |
+| github.com/vearutop/teststat/cachemiss | miss: no prior cached result found; miss: input file too new: cachemiss/marker.txt |
 </details>
 

@@ -1,9 +1,11 @@
 package app
 
 import (
+	"bufio"
 	"bytes"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -284,40 +286,54 @@ func Test_broken(t *testing.T) {
 	assert.Equal(t, `^TestAlwaysFails$|^TestAlwaysFailsInSubtest$|^TestAlwaysFailsInSubtest//-|^TestThatPanics$|^TestThatPanicsInAGoroutine$`, strings.TrimSpace(string(failedRegex)))
 }
 
-// Update golden tests with `make test-cachemiss`.
+// Test_cachemiss runs the cachemiss scenario live, twice, against a shared temp GOCACHE, rather
+// than replaying a committed fixture the way Test_imperfect/Test_broken do: the testcache
+// trace's file path is absolute, baked in at capture time by go itself, so a fixture recorded on
+// one machine can't be relativized correctly when replayed on another (e.g. CI) -- see
+// inputFilePath/relativeTo, which relativizes against wherever *this* process is running from,
+// not wherever the trace was originally captured. Running live keeps that path always consistent
+// with the current checkout. Chdir'd to the repo root (like run-cachemiss.sh) so that path comes
+// out as the clean "cachemiss/marker.txt" a real invocation from the repo root would show,
+// instead of an artifact of this test binary's own package directory.
 func Test_cachemiss(t *testing.T) {
+	t.Chdir("..")
+
+	env := append(os.Environ(), "GOCACHE="+t.TempDir(), "GODEBUG=gocachetest=1")
+
 	var fl flags
-
 	fl.Markdown = true
-	fl.Slowest = 30
-	fl.Slow = time.Second
-
-	files := globRetryFiles(t, "test-cachemiss")
-
-	// run-cachemiss.sh runs from app/testdata, and the recorded testcache traces' file paths
-	// are relativized against the current working directory at parse time (see inputFilePath) --
-	// matching that same cwd here keeps the relative path in the committed golden file
-	// reproducible, regardless of where `go test` itself happens to be invoked from.
-	t.Chdir("testdata")
 
 	p := newProcessor(fl)
 	buf := bytes.NewBuffer(nil)
 	p.rep = buf
 
-	for _, f := range files {
-		rel, err := filepath.Rel("testdata", f)
-		require.NoError(t, err)
+	for i := range 2 {
+		cmd := exec.Command("go", "test", "-tags", "cachemiss", "-json", "./cachemiss/...")
+		cmd.Env = env
 
-		if err := p.process(rel); err != nil {
-			log.Fatalf("%s: %s", rel, err)
-		}
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &out
+
+		require.NoError(t, cmd.Run(), "round %d: %s", i, out.String())
+
+		scanner := bufio.NewScanner(&out)
+		scanner.Buffer(make([]byte, 0, 1e7), 1e7)
+		require.NoError(t, p.iterate(scanner))
 	}
+
+	t.Cleanup(func() {
+		if err := os.Remove(filepath.Join("cachemiss", "marker.txt")); err != nil && !os.IsNotExist(err) {
+			t.Logf("remove marker.txt: %s", err)
+		}
+	})
 
 	p.report()
 
-	expected, err := os.ReadFile("cachemiss.md")
-	require.NoError(t, err)
-	assert.Equal(t, string(expected), buf.String())
+	out := buf.String()
+	require.Contains(t, out, "Packages: 1 total, 0 cached, 1 miss, 0 failing, 0 no tests")
+	require.Contains(t, out, "miss: no prior cached result found")
+	require.Contains(t, out, "miss: input file too new: "+filepath.Join("cachemiss", "marker.txt"))
 }
 
 func TestReportTestCache_SkipsSectionWhenNoMissHasAReason(t *testing.T) {

@@ -303,6 +303,28 @@ func (t test) String() string {
 	return t.pkg + "." + t.fn
 }
 
+// handleNonJSONLine processes one line of go test -json output that isn't itself JSON: a known
+// noise prefix, a GODEBUG=gocachetest=1 testcache trace line, or (falling through) a genuine
+// build failure.
+func (p *processor) handleNonJSONLine(b []byte, text string) {
+	if bytes.HasPrefix(b, []byte("go: downloading")) || bytes.HasPrefix(b, []byte("go test")) ||
+		bytes.HasPrefix(b, []byte("make:")) {
+		return
+	}
+
+	if isTestcacheLine(text) {
+		p.testcacheSeen = true
+
+		if reason, ok := parseTestcacheLine(text); ok {
+			p.testcacheFindings[reason.Package] = append(p.testcacheFindings[reason.Package], reason)
+		}
+
+		return
+	}
+
+	p.buildFailures = append(p.buildFailures, text)
+}
+
 func (p *processor) iterate(scanner *bufio.Scanner) error {
 	for scanner.Scan() {
 		if err := scanner.Err(); err != nil {
@@ -311,22 +333,7 @@ func (p *processor) iterate(scanner *bufio.Scanner) error {
 
 		b := scanner.Bytes()
 		if len(b) == 0 || b[0] != '{' {
-			if bytes.HasPrefix(b, []byte("go: downloading")) || bytes.HasPrefix(b, []byte("go test")) ||
-				bytes.HasPrefix(b, []byte("make:")) {
-				continue
-			}
-
-			if line := scanner.Text(); isTestcacheLine(line) {
-				p.testcacheSeen = true
-
-				if reason, ok := parseTestcacheLine(line); ok {
-					p.testcacheFindings[reason.Package] = append(p.testcacheFindings[reason.Package], reason)
-				}
-
-				continue
-			}
-
-			p.buildFailures = append(p.buildFailures, scanner.Text())
+			p.handleNonJSONLine(b, scanner.Text())
 
 			continue
 		}
@@ -402,8 +409,8 @@ func (p *processor) processBuildOutput(l Line) {
 	lines := strings.Split(strings.TrimSpace(l.Output), "\n")
 
 	for _, line := range lines {
-		if strings.HasPrefix(line, "packagefile ") {
-			pkgd := strings.SplitN(strings.TrimPrefix(line, "packagefile "), "=", 2)
+		if rest, ok := strings.CutPrefix(line, "packagefile "); ok {
+			pkgd := strings.SplitN(rest, "=", 2)
 
 			pkg := p.buildCache[pkgd[0]]
 			pkg.BuildCacheFile = pkgd[1]
