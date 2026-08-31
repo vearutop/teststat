@@ -42,6 +42,7 @@ type flags struct {
 	Allure          string
 	Version         bool
 	MetricsJSON     string
+	TestcacheKeys   string
 }
 
 // Main is an app entry point.
@@ -65,6 +66,7 @@ func Main() {
 	flag.IntVar(&fl.LimitReport, "limit-report", 60000, "maximum report length, exceeding part is truncated")
 	flag.StringVar(&fl.Allure, "allure", "", "path to write allure report")
 	flag.StringVar(&fl.MetricsJSON, "metrics-json", "", "store total run metrics (counts, cache stats) as a JSON file, e.g. for gocacheprog's report_<name> DSN param")
+	flag.StringVar(&fl.TestcacheKeys, "testcache-keys", "", "store {package: {hits: [...], misses: [...]}} gocache object keys as a JSON file (requires GODEBUG=gocachetest=1), e.g. for gocacheprog's testcache_keys DSN param to check the misses against the remote/manifest and/or prioritize the hits")
 
 	flag.BoolVar(&fl.Version, "version", false, "show version and exit")
 

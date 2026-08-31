@@ -32,7 +32,7 @@ type metrics struct {
 }
 
 func (p *processor) buildMetrics() metrics {
-	total, cached, miss, failing, noTests, _ := p.cacheStats()
+	stats := p.cacheStats()
 
 	return metrics{
 		Pass:       p.counts.Pass,
@@ -46,11 +46,11 @@ func (p *processor) buildMetrics() metrics {
 		ElapsedS:     p.elapsed.Seconds(),
 		ElapsedSlowS: p.elapsedSlow.Seconds(),
 
-		PkgTotal:   total,
-		PkgCached:  cached,
-		PkgMiss:    miss,
-		PkgFailing: failing,
-		PkgNoTests: noTests,
+		PkgTotal:   stats.Total,
+		PkgCached:  stats.Cached,
+		PkgMiss:    stats.Miss,
+		PkgFailing: stats.Failing,
+		PkgNoTests: stats.NoTests,
 	}
 }
 
