@@ -336,12 +336,18 @@ func (p *processor) reportFailed() {
 	}
 }
 
+// maxReportedMisses caps how many individual miss lines reportTestCache prints, so a cold run
+// (e.g. against an empty or just-rotated cache) doesn't dump hundreds of near-identical rows -
+// the summary counts above the list already say how many there really were.
+const maxReportedMisses = 50
+
 func (p *processor) reportTestCache() {
-	total, cached, miss, failing, noTests, misses := p.cacheStats()
-	if total == 0 {
+	stats := p.cacheStats()
+	if stats.Total == 0 {
 		return
 	}
 
+	misses := stats.Misses
 	hasReason := false
 
 	for _, m := range misses {
@@ -359,7 +365,7 @@ func (p *processor) reportTestCache() {
 		return
 	}
 
-	summary := fmt.Sprintf("%d total, %d cached, %d miss, %d failing, %d no tests", total, cached, miss, failing, noTests)
+	summary := fmt.Sprintf("%d total, %d cached, %d miss, %d failing, %d no tests", stats.Total, stats.Cached, stats.Miss, stats.Failing, stats.NoTests)
 
 	missReason := func(m cachePkg) string {
 		if len(m.Reasons) == 0 {
@@ -367,6 +373,14 @@ func (p *processor) reportTestCache() {
 		}
 
 		return strings.Join(m.Reasons, "; ")
+	}
+
+	shown := misses
+	truncated := 0
+
+	if len(shown) > maxReportedMisses {
+		shown = shown[:maxReportedMisses]
+		truncated = len(misses) - maxReportedMisses
 	}
 
 	if p.fl.Markdown {
@@ -382,8 +396,16 @@ func (p *processor) reportTestCache() {
 			p.println("| Package | Reason |")
 			p.println("| - | - |")
 
-			for _, m := range misses {
+			for _, m := range shown {
 				p.printf("| %s | %s |\n", m.Package, missReason(m))
+			}
+
+			if truncated > 0 {
+				// A cold run (empty/rotated cache) can miss on most of the suite, and every one
+				// of those shares the same generic "first time" reason - a wall of hundreds of
+				// near-identical rows past this point wouldn't add anything the summary count
+				// above doesn't already say.
+				p.printf("| ... | %d more not shown |\n", truncated)
 			}
 
 			p.println("</details>")
@@ -395,8 +417,12 @@ func (p *processor) reportTestCache() {
 		if len(misses) > 0 {
 			p.println("Cache misses:")
 
-			for _, m := range misses {
+			for _, m := range shown {
 				p.printf("%s: %s\n", m.Package, missReason(m))
+			}
+
+			if truncated > 0 {
+				p.printf("... %d more not shown\n", truncated)
 			}
 		}
 
@@ -578,6 +604,7 @@ func (p *processor) report() {
 	p.storeFailureStats()
 	p.storeBuildFailures()
 	p.storeMetricsJSON()
+	p.storeTestcacheKeysJSON()
 
 	if p.fl.SkipReport {
 		return

@@ -3,6 +3,7 @@ package app
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -389,4 +390,64 @@ func TestReportTestCache_ShowsSectionWhenAtLeastOneMissHasAReason(t *testing.T) 
 	out := buf.String()
 	require.Contains(t, out, "### Test cache")
 	require.Contains(t, out, "miss: no prior cached result found")
+}
+
+func addColdMisses(p *processor, n int) {
+	for i := range n {
+		pkg := fmt.Sprintf("example.com/pkg%03d", i)
+		p.packageStats[pkg] = packageStat{Package: pkg, HadTests: true}
+		p.testcacheFindings[pkg] = []testcacheReason{
+			{Package: pkg, Reason: "miss: no prior cached result found"},
+		}
+	}
+}
+
+func TestReportTestCache_TruncatesMarkdownListOnColdRun(t *testing.T) {
+	var fl flags
+	fl.Markdown = true
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	addColdMisses(p, maxReportedMisses+10)
+
+	p.reportTestCache()
+
+	out := buf.String()
+	require.Contains(t, out, fmt.Sprintf("Cache misses: %d", maxReportedMisses+10))
+	require.Contains(t, out, "| ... | 10 more not shown |")
+	require.Equal(t, maxReportedMisses, strings.Count(out, "miss: no prior cached result found"),
+		"only the first maxReportedMisses rows should actually be printed")
+}
+
+func TestReportTestCache_TruncatesPlainListOnColdRun(t *testing.T) {
+	var fl flags
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	addColdMisses(p, maxReportedMisses+1)
+
+	p.reportTestCache()
+
+	out := buf.String()
+	require.Contains(t, out, "... 1 more not shown")
+	require.Equal(t, maxReportedMisses, strings.Count(out, "miss: no prior cached result found"))
+}
+
+func TestReportTestCache_NoTruncationNoteWhenUnderLimit(t *testing.T) {
+	var fl flags
+	fl.Markdown = true
+
+	p := newProcessor(fl)
+	buf := bytes.NewBuffer(nil)
+	p.rep = buf
+
+	addColdMisses(p, maxReportedMisses)
+
+	p.reportTestCache()
+
+	require.NotContains(t, buf.String(), "more not shown")
 }

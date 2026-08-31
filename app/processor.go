@@ -69,6 +69,7 @@ type processor struct {
 	packageStats         map[string]packageStat
 	buildCache           map[string]packageStat
 	testcacheFindings    map[string][]testcacheReason
+	testcacheLookupKeys  map[string][]string
 	testcacheSeen        bool
 
 	unfinished     map[test]bool
@@ -143,11 +144,12 @@ func newProcessor(fl flags) *processor {
 			WeightFunc:   dynhist.ExpWidth(1.2, 0.9),
 			PrintSum:     true,
 		},
-		packageStats:      map[string]packageStat{},
-		buildCache:        map[string]packageStat{},
-		testcacheFindings: map[string][]testcacheReason{},
-		prLast:            time.Now(),
-		rep:               os.Stdout,
+		packageStats:        map[string]packageStat{},
+		buildCache:          map[string]packageStat{},
+		testcacheFindings:   map[string][]testcacheReason{},
+		testcacheLookupKeys: map[string][]string{},
+		prLast:              time.Now(),
+		rep:                 os.Stdout,
 	}
 
 	if fl.Allure != "" {
@@ -314,6 +316,10 @@ func (p *processor) handleNonJSONLine(b []byte, text string) {
 
 	if isTestcacheLine(text) {
 		p.testcacheSeen = true
+
+		if pkg, key, ok := parseTestcacheLookupKey(text); ok {
+			p.testcacheLookupKeys[pkg] = append(p.testcacheLookupKeys[pkg], key)
+		}
 
 		if reason, ok := parseTestcacheLine(text); ok {
 			p.testcacheFindings[reason.Package] = append(p.testcacheFindings[reason.Package], reason)

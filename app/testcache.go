@@ -29,25 +29,35 @@ func (c cachePkg) hasReason() bool {
 	return len(c.Reasons) != 1 || c.Reasons[0] != noReasonLogged
 }
 
+// cacheStatsResult is cacheStats' breakdown, as named fields rather than a long positional
+// return - some callers only need Misses, and a 6-value positional return forces those into a
+// wall of blank identifiers to get there.
+type cacheStatsResult struct {
+	Total, Cached, Miss, Failing, NoTests int
+	Misses                                []cachePkg
+}
+
 // cacheStats assesses this single run's own test-result cache health: how many packages showed
 // `(cached)`, how many didn't (and why, if the GODEBUG=gocachetest=1 trace was captured), and how
 // many were never a caching candidate at all (no test files, or -run/-bench/-fuzz matched
-// nothing). total counts every package go test touched, including those, so it always accounts
+// nothing). Total counts every package go test touched, including those, so it always accounts
 // for the whole run. A package that failed is excluded from the miss judgment: go test never
 // caches a failing result, so it not being cached is expected, not a finding.
-func (p *processor) cacheStats() (total, cached, miss, failing, noTests int, misses []cachePkg) {
+func (p *processor) cacheStats() cacheStatsResult {
+	var stats cacheStatsResult
+
 	for pkg, ps := range p.packageStats {
-		total++
+		stats.Total++
 
 		switch {
 		case !ps.HadTests:
-			noTests++
+			stats.NoTests++
 		case ps.Failed:
-			failing++
+			stats.Failing++
 		case ps.Cached:
-			cached++
+			stats.Cached++
 		default:
-			miss++
+			stats.Miss++
 
 			seen := map[string]bool{}
 
@@ -72,13 +82,13 @@ func (p *processor) cacheStats() (total, cached, miss, failing, noTests int, mis
 				reasons = []string{noReasonLogged}
 			}
 
-			misses = append(misses, cachePkg{Package: pkg, Reasons: reasons})
+			stats.Misses = append(stats.Misses, cachePkg{Package: pkg, Reasons: reasons})
 		}
 	}
 
-	sort.Slice(misses, func(i, j int) bool { return misses[i].Package < misses[j].Package })
+	sort.Slice(stats.Misses, func(i, j int) bool { return stats.Misses[i].Package < stats.Misses[j].Package })
 
-	return total, cached, miss, failing, noTests, misses
+	return stats
 }
 
 // testcachePrefix marks a GODEBUG=gocachetest=1 trace line. These land on stderr, so they only
@@ -100,6 +110,25 @@ type testcacheReason struct {
 	// already says everything worth saying -- go's own cache-implementation detail (a temp file
 	// path under GOCACHE, an internal "cache entry not found" phrasing) is deliberately never
 	// included here, since it's not something a reader could act on.
+	Key string // GOCACHE-relative object key (e.g. "xx/hash-a") this lookup was for, when the
+	// payload names one (the three "not found" categories below); empty otherwise. Machine-only:
+	// unlike Detail, this is never shown in the human report (see categorizeTestcachePayload's
+	// doc comment) -- it exists for -testcache-keys to hand to gocacheprog for remote/manifest
+	// forensics on exactly the object Go went looking for.
+}
+
+// splitTestcacheLine splits a `testcache: pkg: payload` line into its package and payload,
+// shared by parseTestcacheLine (findings) and parseTestcacheLookupKey (the hit/miss-agnostic
+// lookup key).
+func splitTestcacheLine(line string) (pkg, payload string, ok bool) {
+	rest := strings.TrimPrefix(line, testcachePrefix)
+
+	pkg, payload, ok = strings.Cut(rest, ": ")
+	if !ok || pkg == "" || payload == "" {
+		return "", "", false
+	}
+
+	return pkg, payload, true
 }
 
 // parseTestcacheLine parses one line of GODEBUG=gocachetest=1 output. See test.go in
@@ -107,10 +136,8 @@ type testcacheReason struct {
 // source rather than assumed, since these messages aren't a documented, stable API and could in
 // principle change between Go versions.
 func parseTestcacheLine(line string) (testcacheReason, bool) {
-	rest := strings.TrimPrefix(line, testcachePrefix)
-
-	pkg, payload, ok := strings.Cut(rest, ": ")
-	if !ok || pkg == "" || payload == "" {
+	pkg, payload, ok := splitTestcacheLine(line)
+	if !ok {
 		return testcacheReason{}, false
 	}
 
@@ -119,7 +146,29 @@ func parseTestcacheLine(line string) (testcacheReason, bool) {
 		return testcacheReason{}, false
 	}
 
-	return testcacheReason{Package: pkg, Reason: reason, Detail: detail}, true
+	key, _ := extractCacheKey(payload)
+
+	return testcacheReason{Package: pkg, Reason: reason, Detail: detail, Key: key}, true
+}
+
+// parseTestcacheLookupKey extracts the package and exact GOCACHE object key from a "test ID %x
+// => input ID %x => %x" line. Unlike parseTestcacheLine's categories, which only fire on a miss,
+// go prints this line on every lookup attempt that gets far enough to compute the key -- so it's
+// the only place a cache *hit*'s key is ever observable, and it's deliberately kept out of
+// categorizeTestcachePayload/testcacheReason: mixing it into the findings-per-package list would
+// make every hit package look like it has a "reason" too, breaking hasReason's miss-only meaning.
+func parseTestcacheLookupKey(line string) (pkg, key string, ok bool) {
+	pkg, payload, ok := splitTestcacheLine(line)
+	if !ok {
+		return "", "", false
+	}
+
+	key, ok = extractLookupKey(payload)
+	if !ok {
+		return "", "", false
+	}
+
+	return pkg, key, true
 }
 
 // categorizeTestcachePayload maps a testcache line's payload (everything after "pkg: ") to a
@@ -190,4 +239,51 @@ func relativeTo(base, path string) string {
 	}
 
 	return rel
+}
+
+// extractCacheKey pulls the GOCACHE-relative object key out of a "... cache entry not found:
+// open <gocache-root>/xx/hash-a: no such file or directory" payload (the three "not found"
+// categories in categorizeTestcachePayload all share this exact go-internal wording). The key
+// is the object's last two path segments (2-char shard directory + hash-suffixed filename),
+// which is gocacheprog's own on-disk relative object path convention (see
+// internal/gocache/store.go's objectPath in the gocacheprog repo) -- so it's directly usable to
+// ask gocacheprog "do you have this" without any further translation.
+func extractCacheKey(payload string) (string, bool) {
+	_, rest, found := strings.Cut(payload, ": open ")
+	if !found {
+		return "", false
+	}
+
+	path, _, ok := strings.Cut(rest, ": ")
+	if !ok {
+		return "", false
+	}
+
+	// Split on either separator explicitly, rather than filepath.ToSlash (which only
+	// normalizes the host's own separator -- go's own trace was produced by whatever OS
+	// actually ran the test, not necessarily this one, e.g. when re-parsing a captured log).
+	parts := strings.FieldsFunc(path, func(r rune) bool { return r == '/' || r == '\\' })
+	if len(parts) < 2 {
+		return "", false
+	}
+
+	return parts[len(parts)-2] + "/" + parts[len(parts)-1], true
+}
+
+// extractLookupKey pulls the GOCACHE object key out of a "test ID %x => input ID %x => %x"
+// payload -- the third %x is exactly testAndInputKey(testID, testInputsID), the ActionID go
+// checks the cache for, whether or not it's actually there. Reassembled into the same
+// "xx/hash-a" shard convention as extractCacheKey so both feed the same downstream format.
+func extractLookupKey(payload string) (string, bool) {
+	parts := strings.Split(payload, " => ")
+	if len(parts) != 3 || !strings.HasPrefix(parts[0], "test ID ") || !strings.HasPrefix(parts[1], "input ID ") {
+		return "", false
+	}
+
+	hexHash := parts[2]
+	if len(hexHash) < 2 {
+		return "", false
+	}
+
+	return hexHash[:2] + "/" + hexHash + "-a", true
 }
